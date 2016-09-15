@@ -22,7 +22,7 @@ function varargout = Reconstruction(varargin)
 
 % Edit the above text to modify the response to help Reconstruction
 
-% Last Modified by GUIDE v2.5 15-Sep-2016 11:09:09
+% Last Modified by GUIDE v2.5 15-Sep-2016 11:53:42
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -77,7 +77,12 @@ handles.NumTrials.String = 70;
 handles.StartAcceptP.String = 0.95;
 handles.EndAcceptP.String = 1e-3;
 
+axes(handles.OriginalIPFMap)
+handles.grainmap.genIPFmap;
+
 % Update handles structure
+handles.DataPanel.Visible = 'off';
+handles.DataPanelBlank.Visible = 'on';
 guidata(hObject, handles);
 
 % UIWAIT makes Reconstruction wait for user response (see UIRESUME)
@@ -195,6 +200,17 @@ function AmbigResMethod_Callback(hObject, eventdata, handles)
 
 % Hints: contents = cellstr(get(hObject,'String')) returns AmbigResMethod contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from AmbigResMethod
+value = GetPopupValue(hObject);
+if strcmp(value,'Simulated Annealing')
+    enable = 'on';
+else
+    enable = 'off';
+end 
+handles.NumTemps.Enable = enable;
+handles.NumTrials.Enable = enable;
+handles.StartAcceptP.Enable = enable;
+handles.EndAcceptP.Enable = enable;
+    
 
 
 % --- Executes during object creation, after setting all properties.
@@ -380,6 +396,8 @@ phaseSel = [handles.PhaseTable.Data{:,2}];
 phaseIDs = handles.grainmap.phasekey.phaseID(phaseSel);
 
 % Create Reconstructor
+steps = 5;
+w = waitbar(0,['Creating Reconstructor Object (Step 1/' num2str(steps) ') ...']);
 R = Reconstructor(handles.grainmap,GetPopupValue(handles.ClusteringOptions),phaseIDs);
 R.tripletMinNeighborMiso = handles.TripletMinNeighborMiso.Value;
 R.trioCutoffMiso = handles.TrioCutoffMiso.Value;
@@ -395,26 +413,118 @@ R.startAcceptP = handles.StartAcceptP.Value;
 R.endAcceptP = handles.EndAcceptP.Value;
 
 % Find Triplets
+waitbar(1/steps,w,['Finding triplets (Step 2/' num2str(steps) ') ...']);
 R.find_triplets;
 
 % Find Trios
+waitbar(2/steps,w,['Finding trios (Step 3/' num2str(steps) ') ...']);
 R.find_trios;
 
 % Grow Clusters
+waitbar(3/steps,w,['Growing clusters (Step 4/' num2str(steps) ') ...']);
 R.grow_clusters_from_trios;
 
 % Place Clusters
+waitbar(4/steps,w,['Placing clusters (Step 5/' num2str(steps) ') ...']);
 R.place_clusters;
 
 % Fill Unallocated Regions
-R.fill_unalloc_regions;
+%R.fill_unalloc_regions;
 
+axes(handles.ReconstructedIPFMap)
+R.genReconstructedIPFmap;
 
+waitbar(1,w,'Finished Reconstruction')
+close(w)
 
-
-
+handles.DataPanel.Visible = 'on';
+handles.DataPanelBlank.Visible = 'off';
 
 
 function value = GetPopupValue(Popup)
 list = Popup.String;
 value = list{Popup.Value};
+
+
+% --- Executes on button press in SelectDataPoints.
+function SelectDataPoints_Callback(hObject, eventdata, handles)
+% hObject    handle to SelectDataPoints (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes on button press in SelectRegion.
+function SelectRegion_Callback(hObject, eventdata, handles)
+% hObject    handle to SelectRegion (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes on button press in PlotClusterData.
+function PlotClusterData_Callback(hObject, eventdata, handles)
+% hObject    handle to PlotClusterData (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes on button press in PlotDaughterGrainData.
+function PlotDaughterGrainData_Callback(hObject, eventdata, handles)
+% hObject    handle to PlotDaughterGrainData (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes on button press in ClearSelectedData.
+function ClearSelectedData_Callback(hObject, eventdata, handles)
+% hObject    handle to ClearSelectedData (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes on button press in ReassignDaughterRegion.
+function ReassignDaughterRegion_Callback(hObject, eventdata, handles)
+% hObject    handle to ReassignDaughterRegion (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes on button press in ReassignPARegion.
+function ReassignPARegion_Callback(hObject, eventdata, handles)
+% hObject    handle to ReassignPARegion (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes on button press in RedivideClusterOverlap.
+function RedivideClusterOverlap_Callback(hObject, eventdata, handles)
+% hObject    handle to RedivideClusterOverlap (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes on button press in RecalculatePAOrientation.
+function RecalculatePAOrientation_Callback(hObject, eventdata, handles)
+% hObject    handle to RecalculatePAOrientation (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes on button press in ExpandNeighbor.
+function ExpandNeighbor_Callback(hObject, eventdata, handles)
+% hObject    handle to ExpandNeighbor (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes on button press in FillUnallocatedbyCluster.
+function FillUnallocatedbyCluster_Callback(hObject, eventdata, handles)
+% hObject    handle to FillUnallocatedbyCluster (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes on button press in WriteAngFile.
+function WriteAngFile_Callback(hObject, eventdata, handles)
+% hObject    handle to WriteAngFile (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
