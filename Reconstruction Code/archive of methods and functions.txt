@@ -1,0 +1,430 @@
+%%Function archive
+
+%Old function to find triplets in a grainmap, a member function of the "reconstructor" object:
+
+%Define triplets REFERENCE COPY
+function find_triplets(obj)
+
+    grainPool = obj.daughterGrains;
+    includedGIDs = [grainPool.OIMgid];
+    tripletContainer = cell(1,length(grainPool));
+    minNeighborMiso = obj.tripletMinNeighborMiso;
+
+    parfor i = 1:length(includedGIDs)
+
+        %Pull current grain and its ID
+        currGrainGID = includedGIDs(i);
+        currGrain = grainPool(currGrainGID);
+
+        %Extract neighbor list for current grain
+        neighborGIDs = intersect(currGrain.neighborIDs,includedGIDs); %Intersect used here to leave out neighbors that are not one of the included phases
+        neighbors = grainPool(neighborGIDs);
+
+        %Get list of common neighbors between current grain and each of its neighbors 
+        neighborTripletsHold = cell(1,length(neighbors));
+        for j = 1:length(neighbors)
+
+            %Pull current neighbor to current grain and make sure
+            %it's orientation is not the same as the current grain
+            currNeighbor = neighbors(j);
+            neighborMiso = q_min_distfun(currGrain.orientation.quat',currNeighbor.orientation.quat','cubic');
+
+            if neighborMiso>minNeighborMiso
+
+                currNeighborGID = currNeighbor.OIMgid;
+
+                %Extract next-neighbor list from current neighbor
+                nextNeighborGIDs = intersect(currNeighbor.neighborIDs,includedGIDs);
+
+                commonNeighborGIDs = intersect(neighborGIDs,nextNeighborGIDs);
+
+                tripletsHold = [];
+                for k = 1:length(commonNeighborGIDs)
+                    currCommonNeighborGID = commonNeighborGIDs(k);
+                    tripletsHold(k,:) = [currGrainGID currNeighborGID currCommonNeighborGID];
+                end  
+
+                neighborTripletsHold{j} = tripletsHold;
+            end
+
+        end
+
+        tripletContainer{i} = neighborTripletsHold;
+
+    end
+
+    %extract data from cells
+    triplets_count = 1;
+    for i=1:length(tripletContainer)
+        for j=1:length(tripletContainer{i})
+            if ~isempty(tripletContainer{i}{j})
+                for k=1:length(tripletContainer{i}{j}(:,1))
+                    triplets_array(triplets_count,:) = tripletContainer{i}{j}(k,:);
+                    triplets_count = triplets_count + 1;
+                end
+            end
+        end
+    end
+
+    %reduce to unique triplets
+    triplets_array = sort(triplets_array,2);
+    triplets_array = unique(triplets_array,'rows');
+
+    %Fill triplets property;
+    for i=1:length(triplets_array)
+        tripletIDs = triplets_array(i,:);
+        tripletGrains = obj.daughterGrains(tripletIDs);
+        tripletObjects(i) = Triplet(tripletGrains);
+    end
+
+    obj.triplets = tripletObjects;
+
+end
+
+%%
+
+%Old function to grow clusters from a trio, daughterCluster member function
+
+        %Grow cluster
+        function grow_cluster(obj, reconstructor)
+            
+            load quat_cubic_symops;
+            
+            %Set pool of grains to draw from for cluster growth
+            grainPool = reconstructor.daughterGrains;
+            grainPoolGIDs = [grainPool.OIMgid];
+            
+            %Add initial triplet to array of cluster members
+            obj.memberGrains = [obj.memberGrains grainPool(obj.startTrio.parentTripletIDs)];
+            obj.parentPhaseOrientations = [obj.parentPhaseOrientations obj.startTrio.orientations];
+            
+            %Get neighbors of starting triplet grains
+            neighborIDs = intersect(setdiff(unique([obj.memberGrains.neighborIDs]),[obj.memberGrains.OIMgid]),grainPoolGIDs);
+            
+            %Grow cluster
+            q_clusterOCenter = obj.clusterOCenter.quat;
+            clustSizeChange = 3;
+            while clustSizeChange~=0
+                
+                startClustSize = length(obj.memberGrains);
+                
+                %Test each neighbor to see if it has a possible parent
+                %within window. If so, add grain to cluster members and add
+                %possible parent orientation to group
+                neighborGrains = grainPool(neighborIDs);
+                toadd = false(1,length(neighborGrains));
+                q_clusterOCenterHold = q_clusterOCenter;
+                
+                for i=1:length(neighborGrains)
+                    
+                    currNeighbor = neighborGrains(i);
+                        
+                    parentOrientationQuats = [currNeighbor.newPhaseOrientations.quat];
+                    centerMisos = q_min_distfun(q_clusterOCenter',parentOrientationQuats','cubic'); %THIS NEEDS TO BE GENERALIZED TO SET THE SYMMETRY TYPE FROM PHASES INVOLVED
+                    
+                    [minMiso,minInd] = min(centerMisos);
+                    if minMiso<obj.misoTolerance
+                        toadd(i)=true;
+                        [miso_min, rotated_quats, q_clusterOCenterHold] = q_average_2_orientations_withweights(q_clusterOCenterHold,currNeighbor.newPhaseOrientations(minInd).quat,length(obj.parentPhaseOrientations),1,quat_cubic_symops);
+                        obj.parentPhaseOrientations = [obj.parentPhaseOrientations currNeighbor.newPhaseOrientations(minInd)];
+                    end
+                    
+                end
+                
+                %Update set of member grains by adding grains within current window.
+                obj.memberGrains = [obj.memberGrains neighborGrains(toadd)];
+                q_clusterOCenter = q_clusterOCenterHold;
+                
+                %Reset list of neighborIDs from current set of grains
+                neighborIDs = intersect(setdiff(unique([obj.memberGrains.neighborIDs]),[obj.memberGrains.OIMgid]),grainPoolGIDs);
+                
+                %Calculate cluster size change for this iteration
+                newClustSize = length(obj.memberGrains);
+                clustSizeChange = newClustSize-startClustSize;
+                
+            end
+            
+            
+        end
+		
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+		
+		%Old function to grow cluster from trio - 6/4/2016
+		
+		%Grow cluster
+        function grow_cluster(obj,reconstructor)
+            
+            load quat_cubic_symops;
+            
+            %Initialize cluster member data
+            grainPool = reconstructor.daughterGrains;
+            obj.memberGrains = [obj.memberGrains  grainPool(obj.startTrio.parentTripletIDs)];
+            clustPAquats = [obj.startTrio.orientations.quat];
+            clusterOCenter_q = obj.clusterOCenter.quat;
+            
+            %Grow cluster
+            clustChanged = true;
+            while clustChanged
+                
+                clustChanged = false;
+                
+                %Get neighbor grains to current set of cluster members
+                neighborIDs = intersect(setdiff(unique([obj.memberGrains.neighborIDs]),[obj.memberGrains.OIMgid]),[grainPool.OIMgid]);
+                neighborGrains = grainPool(neighborIDs);
+                
+                for i=1:length(neighborGrains) %for each neighbor check if it has a PA within tol of cluster center
+                    
+                    currNeighbor = neighborGrains(i);
+                    currNeighPAquats = [currNeighbor.newPhaseOrientations.quat];
+                    inWindow = q_min_distfun(clusterOCenter_q',currNeighPAquats','cubic')<obj.misoTolerance;
+                    
+                    if any(inWindow) %if current neighbor has PA in window, add to group
+                        if sum(inWindow)>1, error('Neighbor grain contains multiple possible parents within window'); end
+                        
+                        obj.memberGrains = [obj.memberGrains currNeighbor];
+                        clustPAquats = [clustPAquats currNeighPAquats(:,inWindow)];
+                        clustChanged = true;
+                        
+                    end
+                    
+                end
+                
+                %Calculate new average cluster center
+                [rotated_quats,clusterOCenter_q] = q_average_orientations_in_window(clustPAquats,clusterOCenter_q,obj.misoTolerance,quat_cubic_symops);
+                
+                %If any current member grains have selected PA outside of new window, remove
+                outsideWindow = q_min_distfun(clusterOCenter_q',clustPAquats','cubic')>obj.misoTolerance;
+                if any(outsideWindow)
+                    obj.memberGrains = obj.memberGrains(~outsideWindow);
+                    clustPAquats = clustPAquats(:,~outsideWindow);
+                end
+                
+            end
+		
+		
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+		
+		function to grow cluster from trios (method of reconstructor object)
+		
+		clustOR = obj.OR;
+		
+		function grow_clusters_from_trios(obj)
+            trioSet = [obj.triplets.parentPhaseTrios];
+            
+            clusterSet = cell(1,length(trioSet));
+            parfor i=1:length(trioSet) %make parfor
+                
+                currClust = daughterCluster(trioSet(i),clustOR);
+                currClust.grow_cluster(obj);
+                
+                clusterSet{i} = currClust;
+                
+            end
+            
+            obj.clusters = [clusterSet{:}];
+            
+        end
+		
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+		%Altered function to grow clusters from trios, in attempt to reduce the number of redundant clusters
+		%(method of reconstructor object)
+		
+		
+		    function grow_clusters_from_trios(obj)
+            
+            clustOR = obj.OR;
+            
+            trioSet = [obj.triplets.parentPhaseTrios];
+            
+            %Sort trios by PA misorientation from average
+            misoSums = [trioSet.misoSum];
+            [sortedSums,I] = sort(misoSums);
+            
+            trioSet = trioSet(I);
+            
+            %Grow a cluster for each trio. Remove subsequent trios that are
+            %within PA window of grown cluster and that have an overlap in
+            %daughter grains
+            clusterCount = 1;
+            while numel(trioSet)>0
+                
+                %Initialize cluster from first trio in the list
+                currClust = daughterCluster(trioSet(1),clustOR);
+                
+                %Grow cluster, add to set of clusters
+                currClust.grow_cluster(obj);
+                clusterSet{clusterCount} = currClust;
+                clusterCount = clusterCount + 1;
+                
+                %Remove from list trio that was used to grow cluster
+                if numel(trioSet)>1
+                    trioSet = trioSet(2:numel(trioSet));
+                else
+                    trioSet = Trio.empty;
+                end
+                
+                %Remove trios from set that have averaged orientations
+                %within PA window and any daughter grains in common with
+                %current cluster
+                if ~isempty(trioSet)
+                    clusterCenterQ = currClust.clusterOCenter.quat;
+                    clustMemberGrainIDs = [currClust.memberGrains.OIMgid];
+
+                    trioCenters = [trioSet.avgOrientation];
+                    trioCentersQ = [trioCenters.quat];
+                    trioTripletIDs = cellfun(@(x) x',{trioSet.parentTripletIDs},'UniformOutput',false);
+                    trioTripletIDs = [trioTripletIDs{:}]';
+
+%                     hasCommonIDs = sum(ismember(trioTripletIDs,clustMemberGrainIDs),2)==3;
+                    hasCommonIDs = any(ismember(trioTripletIDs,clustMemberGrainIDs),2);
+                    withinWindow = q_min_distfun(clusterCenterQ',trioCentersQ','cubic')<currClust.misoTolerance;
+                    toRemove = and(hasCommonIDs,withinWindow);
+                    
+                    trioSet = trioSet(~toRemove);
+                    
+                end
+               
+            end
+            
+            obj.clusters = [clusterSet{:}];
+            
+        end
+		
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+		
+		function grow_clusters_from_trios(obj)
+            
+            clustOR = obj.OR;
+            
+            trioSet = [obj.triplets.parentPhaseTrios];
+            
+            clusterSet = cell(1,length(trioSet));
+            for i=1:length(trioSet) %MAKE PARFOR
+                
+                currClust = daughterCluster(trioSet(i),clustOR);
+                currClust.grow_cluster(obj);
+                
+                clusterSet{i} = currClust;
+                
+                
+                
+            end
+            
+            obj.clusters = clusterSet;
+            
+            obj.filter_clusters;
+            obj.remove_artifacts;
+            obj.fill_clusters;
+
+		end
+		
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%Method to filter clusters 6-16-16
+
+function filter_clusters(obj)
+            
+            %Run calc_metadata for each cluster
+            clusterSet = obj.clusters;
+            cellfun(@(x) x.calc_metadata, clusterSet);
+            
+            %--------------------------------------------------------------
+            %Filter through clusters, removing redundant clusters
+            %Removal condition: any overlap, with PA orientations within
+            %tight window of each other
+            %--------------------------------------------------------------
+            
+            %Sort clusters by decreasing size (number of members)
+            numMembers = cellfun(@(x) length(x.memberGrains),clusterSet);
+            [B,I] = sort(numMembers,'descend');
+            clusterSet = clusterSet(I);
+            
+            %Cycle through clusters, removing subsequent clusters that are
+            %redundant
+            misoTol = 3*(pi/180);
+            nClust = length(clusterSet);
+            currInd = 1;
+            while currInd<nClust %any clusters left to check
+                currClust = clusterSet{currInd};    
+                compClust = clusterSet((currInd+1):nClust);%remaining clusters in list
+                
+                %Compare overlap and PA orientations 
+                currGIDs = [currClust.memberGrains.OIMgid];
+                
+                overlap = cellfun(@(x) any(ismember(currGIDs,[x.memberGrains.OIMgid])),compClust);
+                inwindow = cellfun(@(x) q_min_distfun(currClust.clusterOCenter.quat',x.clusterOCenter.quat','cubic')<misoTol,compClust);
+                            
+                %Remove any from list that are redundant
+                toRemove = and(overlap,inwindow);
+                clusterSet = {clusterSet{1:currInd} compClust{~toRemove}};
+                
+                currInd = currInd + 1;
+                nClust = length(clusterSet); 
+            end
+            
+            %--------------------------------------------------------------
+            %FOR NOW, remove clusters that have different orientations from
+            %the first one found. Also remove all clusters that are "sub"
+            %clusters (contain a subset of variants)
+            %--------------------------------------------------------------
+            
+            %Sort clusters by decreasing number of variants present, then by decreasing size (number of members)
+            numVars = cellfun(@(x) sum(x.existingVariants),clusterSet);
+            numMembers = cellfun(@(x) length(x.memberGrains),clusterSet);
+            mat = [numVars(:) numMembers(:)];
+            [B,I] = sortrows(mat,[-1 -2]);
+            clusterSet = clusterSet(I);
+            
+            %Cycle through clusters, removing subsequent clusters as either sub-clusters or clusters with alternate parent orientations
+            misoTol = 5.26*(pi/180); %Maximum recommended tolerance 
+            nClust = length(clusterSet);
+            currInd = 1;
+            while currInd<nClust
+                
+                currClust = clusterSet{currInd};
+                currVarsQ = [currClust.theoreticalVariants(currClust.existingVariants).quat];
+
+                %Cycle through subsequent clusters, marking any to be removed
+                toRemove = false(1,nClust);
+                for i=currInd+1:nClust
+                    compClust = clusterSet{i};
+                    compMemsOr = [compClust.memberGrains.orientation];
+                    compMemsQ = [compMemsOr.quat];
+                    
+                    if any(intersect([currClust.memberGrains.OIMgid],[compClust.memberGrains.OIMgid])) %if any overlap between cluster members
+                        
+                        %Compare clusters to see if compClust members will all fit into currClust variants. If so, compClust is a sub cluster or an alternate possible parent orientation
+                        fitsIntoVar = false(length(compMemsQ(1,:)),1);
+                        misos = zeros(length(compMemsQ(1,:)),length(currVarsQ(1,:)));
+                        for j=1:length(currVarsQ(1,:))
+                            
+                            misos(:,j) = q_min_distfun(currVarsQ(:,j)',compMemsQ','cubic');
+                            
+                            fitsIntoVar = fitsIntoVar + (misos(:,j)<misoTol);
+                            
+                        end
+                        
+                        if ~any(~fitsIntoVar) %if all of compClust members fit into currClust variants
+                            toRemove(i) = true;
+                        end
+                        
+                    end
+                end
+            
+                %Remove marked clusters
+                clusterSet = clusterSet(~toRemove);
+                
+                nClust = length(clusterSet);
+                currInd = currInd + 1;
+            end
+            
+            %Sort cluster by increasing number of variants
+            numVars = cellfun(@(x) sum(x.existingVariants),clusterSet);
+            [B,I] = sort(numVars);
+            clusterSet = clusterSet(I);
+            
+            
+            obj.clusters = clusterSet;
+            
+            
+        end
