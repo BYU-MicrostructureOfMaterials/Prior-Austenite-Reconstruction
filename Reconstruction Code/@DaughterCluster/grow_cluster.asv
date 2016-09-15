@@ -67,11 +67,12 @@ function grow_cluster(obj,reconstructor)
             if any(inWindow) %if current non-member has PA in window, add to group
                 if sum(inWindow)==1 
 
-                    obj.memberGrains = [obj.memberGrains currNonMember];
-                    clustPAquats = [clustPAquats currNonMemberPAquats(:,inWindow)];
-                    obj.includedNonMemberGrains = setdiff(obj.includedNonMemberGrains,currNonMember);
+                obj.memberGrains = [obj.memberGrains currNonMember];
+                clustPAquats = [clustPAquats currNonMemberPAquats(:,inWindow)];
+                obj.includedNonMemberGrains = setdiff(obj.includedNonMemberGrains,currNonMember);
                 
                 end
+
             end
               
         end

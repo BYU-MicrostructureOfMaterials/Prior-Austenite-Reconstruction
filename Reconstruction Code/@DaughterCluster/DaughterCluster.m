@@ -10,10 +10,9 @@ classdef DaughterCluster < handle
         
         parentPhaseOrientations  %This variable name is misleading and needs to be changed
         clusterOCenter
-        misoTolerance = 5.2*pi/180; %6.8*(pi/180); %Max tolerance should not exceed half the minimum misorientation between theoretical variant orientations for the OR used in the reconstruction
+        misoTolerance = 5.2*pi/180; %5.2*pi/180; %6.8*(pi/180); %Max tolerance should not exceed half the minimum misorientation between theoretical variant orientations for the OR used in the reconstruction
         
         clusterIPFmap
-        clusterBoundary
         scanLocations
         
     end
@@ -24,7 +23,6 @@ classdef DaughterCluster < handle
         theoreticalVariants@Orientation
         existingVariants
         variantGIDs %Cell array, one for each variant, with list of member grain GIDs
-        centroid
         ID@int32
         
     end
@@ -53,8 +51,10 @@ classdef DaughterCluster < handle
         
         expand_cluster_by_NN(obj,reconstructor,includedPoolIDs)
         
+        expand_cluster_by_widen_tol(obj,reconstructor,newTol,includedPoolIDS)
+        
         %Calc cluster meta data
-        calc_metadata(obj,gIDmat,filledtype)
+        calc_metadata(obj,gIDmat,filledtype,updateLocationsOnly)
         
         %Plot cluster IPF map, either for collection of grains or for cluster average
         genClusterIPFmap(obj, IDmat, type, filledtype,fignum)

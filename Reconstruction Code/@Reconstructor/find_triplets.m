@@ -1,5 +1,7 @@
 function find_triplets(obj,selectedSet)
     
+    disp('Finding triplets');
+
     %Define set of grain IDs that can be part of a triplet
     grainPool = obj.daughterGrains;
     poolIDs = [grainPool.OIMgid];
@@ -13,7 +15,7 @@ function find_triplets(obj,selectedSet)
     %Initialize empty list of triplets. For each included grain, search for
     %all triplets that it is a part of
     tripletContainer = {};
-    
+    tripletCounter = 1;
     minNeighborMiso = obj.tripletMinNeighborMiso;
     while ~isempty(includedGIDs)
 
@@ -48,8 +50,9 @@ function find_triplets(obj,selectedSet)
 
                     if (CtoBmiso>minNeighborMiso && CtoAmiso>minNeighborMiso)
 
-                        triplet = Triplet([currGrain currNeighbor currCommonNeighbor]);
+                        triplet = Triplet([currGrain currNeighbor currCommonNeighbor],int32(tripletCounter));
                         tripletContainer = [tripletContainer {triplet}];
+                        tripletCounter = tripletCounter + 1;
 
                     end
 
@@ -68,6 +71,6 @@ function find_triplets(obj,selectedSet)
     end
 
     obj.triplets = [tripletContainer{:}];
-    disp('Done finding triplets');
+    disp(['Done finding triplets: ', num2str(length(obj.triplets)), ' triplets found']);
 
 end

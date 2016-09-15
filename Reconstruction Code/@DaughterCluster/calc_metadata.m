@@ -3,47 +3,57 @@
 %cluster: members of the cluster, PA orientation, if the cluster has been
 %filled, etc.
 
-function calc_metadata(obj,gIDmat,filledtype)
+function calc_metadata(obj,gIDmat,filledtype,updateLocationsOnly)
 
-    %Detect what child variants make up cluster
-    switch obj.OR
-        case 'KS'
-            load q_KS_OR_gamma_to_alpha;
-            q_trans = q_KS_OR_gamma_to_alpha;
-        case 'NW'
-            load q_NW_OR_gamma_to_alpha;
-            q_trans = q_NW_OR_gamma_to_alpha;
+    if nargin==3
+        updateLocationsOnly = false;
     end
-    Nvar = length(q_trans(1,:));
 
-    %Generate theoretical daughter variants for PA cluster
-    variants_q = zeros(4,Nvar);
-    for i=1:Nvar
-        variants_q(:,i) = quatLmult(q_trans(:,i),obj.clusterOCenter.quat);
-        O(i) = Orientation(variants_q(:,i),'quat');
-    end
-    obj.theoreticalVariants = O;
+    if ~updateLocationsOnly
+    
+        %Detect what child variants make up cluster
+        switch obj.OR
+            case 'KS'
+                load q_KS_OR_gamma_to_alpha;
+                q_trans = q_KS_OR_gamma_to_alpha;
+            case 'NW'
+                load q_NW_OR_gamma_to_alpha;
+                q_trans = q_NW_OR_gamma_to_alpha;
+        end
+        Nvar = length(q_trans(1,:));
 
-    %Cycle through each member grain and count which variant group
-    %it belongs to
-    obj.variantGIDs = cell(1,Nvar);
-    for i=1:length(obj.memberGrains)
+        %Generate theoretical daughter variants for PA cluster
+        variants_q = zeros(4,Nvar);
+        for i=1:Nvar
+            variants_q(:,i) = quatLmult(q_trans(:,i),obj.clusterOCenter.quat);
+            O(i) = Orientation(variants_q(:,i),'quat');
+        end
+        obj.theoreticalVariants = O;
 
-        q_currDaughterO = obj.memberGrains(i).orientation.quat;
-        varMisos = q_min_distfun(q_currDaughterO',variants_q','cubic');
+        %Cycle through each member grain and count which variant group
+        %it belongs to
+        obj.variantGIDs = cell(1,Nvar);
+        for i=1:length(obj.memberGrains)
 
-        inWindow = varMisos<obj.misoTolerance;
+            q_currDaughterO = obj.memberGrains(i).orientation.quat;
+            varMisos = q_min_distfun(q_currDaughterO',variants_q','cubic');
 
-        if sum(inWindow)~= 1, 
-            error('Cluster member fails comparison to theoretical variants'); 
+            inWindow = varMisos<obj.misoTolerance;
+
+            if sum(inWindow)< 1, 
+                error('Cluster member fails comparison to theoretical variants');
+            elseif sum(inWindow)>1
+                [val,inWindow] = min(varMisos);
+            end
+
+            obj.variantGIDs{inWindow} = [obj.variantGIDs{inWindow} obj.memberGrains(i).OIMgid];
+
         end
 
-        obj.variantGIDs{inWindow} = [obj.variantGIDs{inWindow} obj.memberGrains(i).OIMgid];
-
+        obj.existingVariants = cellfun(@(x) any(x),obj.variantGIDs);
+    
     end
-
-    obj.existingVariants = cellfun(@(x) any(x),obj.variantGIDs);
-
+    
     %Calc the number of scanpoints that are in cluster
     switch filledtype
         case 'filled'

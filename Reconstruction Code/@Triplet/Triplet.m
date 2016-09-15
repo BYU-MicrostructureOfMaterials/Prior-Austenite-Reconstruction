@@ -5,18 +5,21 @@ classdef Triplet < handle
         grains
         parentPhaseTrios
         grainMisoSum
+        ID@int32
         
     end
     
     methods
         
         %Constructor
-        function obj = Triplet(grainarray)
+        function obj = Triplet(grainarray,IDnum)
             if nargin > 0
                 
                 if length(grainarray)~= 3 || ~isa(grainarray,'Grain')
                     error('Error creating instance of Triplet class. Check input length and type');
                 end
+                
+                obj.ID = IDnum;
                 
                 obj.grains = grainarray;
                 
@@ -36,8 +39,6 @@ classdef Triplet < handle
         
         %Calc trios
         calc_trios(obj,cutoff)
-        
-        %Plot IPF map of triplet's member grains
         
     end
     

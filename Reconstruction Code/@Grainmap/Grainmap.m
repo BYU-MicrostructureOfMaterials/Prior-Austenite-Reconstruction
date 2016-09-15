@@ -28,7 +28,7 @@ classdef Grainmap < handle
     
     methods
         %Constructor
-        function obj = Grainmap(scandata,findneighbors)
+        function obj = Grainmap(scandata)
             
             if nargin == 0
                 
@@ -37,52 +37,24 @@ classdef Grainmap < handle
                 
                 obj.phasekey = table(phaseID,phasename);
                 
-                
             else
-                if nargin == 1
-                    findneighbors = 0;
-                end
-                if findneighbors
-                    steps = 4;
-                else
-                    steps = 3;
-                end
                 
                 if ~isa(scandata,'Scandata');
                     error('Grainmap constructor input must be a Scandata object');
                 end
                 
                 obj.scandata = scandata;
-                
-                w = waitbar(0,['Creating Grain Objects (Step 1/' num2str(steps) ') ...']);
                 obj.import_scandata(scandata);
-                waitbar(1/steps,w,['Generating Grain and Phase ID matrices (Step 2/' num2str(steps) ') ...'])
+                
                 obj.gen_IDmats;
-                waitbar(2/steps,w,['Generating Grain IPF Map (Step 3/' num2str(steps) ') ...'])
                 obj.genIPFmap;
-                if findneighbors
-                    waitbar(3/steps,w,'Finding Neighboring Grains (Step 4/4) ...')
-                    obj.find_neighbors;
-                end
-                waitbar(1,w,'Grain Map Creation Finished')
-                close(w)
+                
             end
             
         end
         
-        %Add grain to grainmap table
-            %Check grain for overlap with existing grains (in map, or IDs)
-            %Check against phasekey to check phasename/ID and grain type. 
-                %Add if not already part of table
-            %Updata min/max x and y position numbers and stepsize in map
-        
         %Gen grain IPF map
         genIPFmap(obj)
-        
-        superimposedIPF(obj,type)
-        
-        
-        %Get polefigure of grain data (gen new unless data is locked)
         
         %Run each grain's find neighbors function 
         find_neighbors(obj)

@@ -14,8 +14,6 @@ testreconstructor = Reconstructor(testgrainmap,'KS',[0]);
 testreconstructor.find_triplets;
 testreconstructor.find_trios;
 testreconstructor.grow_clusters_from_trios;
-testreconstructor.place_clusters;
-
-
-
-
+testreconstructor.place_clusters(true);
+% testreconstructor.fill_unalloc_regions_by_expansion(100);
+% testreconstructor.place_clusters(false);

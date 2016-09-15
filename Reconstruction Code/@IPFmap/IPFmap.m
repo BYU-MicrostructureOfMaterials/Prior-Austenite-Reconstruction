@@ -33,6 +33,10 @@ classdef IPFmap < handle
         %Generate IPF colors from orientations
         rgb = IPF_rgbcalc(mat)
         
+        %Generate IPF image superimposed with a matrix of values ranging
+        %from 0 to 1
+        IPFimage = superimposedIPF(IPFimage,matrix)
+        
     end
     
     

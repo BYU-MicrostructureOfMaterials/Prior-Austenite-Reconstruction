@@ -1,8 +1,6 @@
 function divide_AR_by_best_side(obj,clusterA,clusterB)
     
     gIDmat = obj.grainmap.gIDmat;
-    clusterA.fill_cluster(obj.grainmap);
-    clusterB.fill_cluster(obj.grainmap);
     
     overlapRegion = and(clusterA.scanLocations,clusterB.scanLocations);
     overlapIDs = unique(gIDmat(overlapRegion));

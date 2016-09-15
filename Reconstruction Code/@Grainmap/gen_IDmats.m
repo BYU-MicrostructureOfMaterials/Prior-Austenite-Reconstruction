@@ -26,7 +26,7 @@ function gen_IDmats(obj)
     maxGID = max(gIDs);
     maxPID = max(pIDs);
     emptyScanpoints = ~grmat;
-    hold = int32(bwlabel(emptyScanpoints));
+    hold = int32(region_label(emptyScanpoints,8));
     hold(emptyScanpoints) = hold(emptyScanpoints)+maxGID;
     grmat = int32(grmat) + hold;
     pmat(emptyScanpoints) = maxPID + 1;

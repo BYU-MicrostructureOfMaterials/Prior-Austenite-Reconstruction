@@ -36,14 +36,10 @@ classdef Scandata < handle
                 end
                 
                 %Read in file data
-                w = waitbar(0,'Reading Grain File Type I (Step 1/3)...');
                 obj.read_grain_file_type_1(grainfiletype1);
-                waitbar(1/3,w,'Reading Grain File Type II (Step 2/3)...')
                 obj.read_grain_file_type_2(grainfiletype2);
-                waitbar(2/3,w,'Reading metadata (Step 3/3)...')
                 obj.calc_metadata();
-                waitbar(3/3,w,'Finished Reading Data')
-                close(w)
+            
             end
             
         end

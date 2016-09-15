@@ -1,21 +1,26 @@
-function place_clusters(obj)
+function place_clusters(obj,clusters)
 
-clusterArray = obj.clusters;
-
-%Fill cluster interiors
-for currClust=clusterArray
-%     currClust.expand_cluster_by_NN(obj);
-    currClust.fill_cluster(obj.grainmap);
-    currClust.calc_metadata(obj.grainmap.gIDmat,'filled');
+if nargin==2 %First placement of clusters, start from blank clusterIDmat
+    clusterArray = obj.clusters;
+    clusterIDmat = int32(zeros(size(obj.grainmap.gIDmat)));
+elseif nargin==3 %Adding clusters to IPFmap, start from current clusterIDmat
+    clusterArray = clusters;
+    clusterIDmat = obj.clusterIDmat;
 end
 
-clusterIDmat = int32(zeros(size(obj.grainmap.gIDmat)));
+disp('Filling clusters');
+
+%Fill all placed clusters then handle overlap
+for currClust=obj.clusters
+    currClust.fill_cluster(obj.grainmap);
+end
 
 %Initialize cluster containers for sorting
 placedClusters = DaughterCluster.empty;
 filteredClusters = DaughterCluster.empty;
 alternateOrientationClusters = DaughterCluster.empty;
 
+ambiguities = [];
 for currClust=clusterArray
     
     %Test to see if current cluster overlaps with any previously placed
@@ -71,9 +76,7 @@ for currClust=clusterArray
                     %orientation clusters with their placed cluster
                     overlappingIDs = [];
                 case 'ambiguous'
-                    disp('ambiguous');
-%                     obj.divide_AR_by_best_side(currClust,compClust);
-                    obj.divide_AR_by_SA(compClust,currClust);
+                    ambiguities = [ambiguities; [compClust.ID currClust.ID]];
                     toPlace = true;
                     overlappingIDs = setdiff(overlappingIDs,currID);
             end
@@ -100,6 +103,22 @@ end
 obj.clusters = placedClusters;
 obj.filteredClusters = filteredClusters;
 obj.alternateOrientationClusters = alternateOrientationClusters;
+
+disp(['Number of ambiguities: ',num2str(length(ambiguities(:,1)))]);
+if ~isempty(ambiguities)
+    for i=1:length(ambiguities(:,1))
+
+        clusterA = obj.clusters([obj.clusters.ID]==ambiguities(i,1));
+        clusterB = obj.clusters([obj.clusters.ID]==ambiguities(i,2));
+
+        if ~isempty(clusterA) && ~isempty(clusterB)
+            obj.divide_AR_by_SA(clusterA,clusterB);
+        end
+    end
+end
+
 obj.gen_cluster_IDmat;
+
+disp('Done placing clusters');
 
 end

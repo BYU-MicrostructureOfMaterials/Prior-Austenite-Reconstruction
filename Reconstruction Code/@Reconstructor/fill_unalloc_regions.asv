@@ -56,13 +56,20 @@ for i=1:length(regionsToFill)
         %subsequent neighboring clusters, handling individual cases of
         %overlap.
         
+        neighborBL = zeros(1,length(neighborClusters));
+        for j = 1:length(neighborClusters)
+            [maskA,maskB,boundary,neighborBL(i)] = extract_boundary(neighborClusters(i).scanLocations,currRegion);
+        end
+        
+        [neighborBL,I] = sort(neighborBL,'descend');
+        
+        %Assign unallocated region to top two clusters on the list, then
+        %divide by SA
+        
         
     end
     %---------------------------------------------------------------------
     
-    %Grow new clusters---------------------------------------------------
-    
-    %--------------------------------------------------------------------
     
     
     

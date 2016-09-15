@@ -91,8 +91,6 @@ classdef Reconstructor < handle
         
         gen_cluster_IDmat(obj)
         
-        gen_reconstructed_confidence_mat(obj);
-        
         %Place clusters, divide ARs
         place_clusters(obj,clusters)
         

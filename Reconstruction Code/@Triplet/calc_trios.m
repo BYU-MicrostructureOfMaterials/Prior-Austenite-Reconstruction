@@ -33,7 +33,7 @@ function calc_trios(obj,cutoff)
                 if q_min_distfun(passedCq(:,k)',AgrainPOq(:,i)','cubic')<cutoff;
                     %Create trio object
                     currCPO = passedCPO(k);
-                    trios(trioCount) = Trio([currAPO currBPO currCPO],IDs);
+                    trios(trioCount) = Trio([currAPO currBPO currCPO],IDs,obj.ID,cutoff);
                     trioCount = trioCount + 1;
                 end
             end 

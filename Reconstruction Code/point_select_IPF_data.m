@@ -1,31 +1,43 @@
-function [IDs] = point_select_IPF_data(I, id_mat)
+function IDs = point_select_IPF_data(I, id_mat)
 
-%look into impixelregion
-[c,r,P] = impixel(I);
+[nrowsI,ncolsI] = size(I(:,:,1));
+[nrowsMat,ncolsMat] = size(id_mat);
 
-mattype = iscell(id_mat);
-
-
-if mattype
-    IDs = cell(1,length(c));
-else
-    IDs = zeros(1,length(c));
+if nrowsI~=nrowsMat || ncolsI~=ncolsMat
+    error('Input image and ID matrix are not the same size');
 end
 
-for i=1:length(c)
-    column = c(i);
-    row = r(i);
+figure;
+imshow(I);
+hold on;
+
+xset = [];
+yset = [];
+
+pickAnother = true;
+while pickAnother
+   
+    pickAnother = true;
     
-    if mattype
-        IDs{i} = id_mat{row,column};
+    [x,y,button] = ginput(1);
+    
+    if isempty(button) || ~ismember(button,[1 2 3])
+        imshow(I);
+        pickAnother = false;
     else
-        IDs(i) = id_mat(row,column);
-    end
+        xset = [xset; x];
+        yset = [yset; y];
         
+        plot(xset,yset,'k*','MarkerSize',5);
+    end
+    
 end
 
-if mattype
-    IDs = [IDs{:}];
-end
+xset = int32(xset);
+yset = int32(yset);
+
+Linds = sub2ind([nrowsI ncolsI],yset,xset);
+
+IDs = setdiff(unique(id_mat(Linds)),0);
 
 end

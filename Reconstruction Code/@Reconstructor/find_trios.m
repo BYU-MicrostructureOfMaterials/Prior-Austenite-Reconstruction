@@ -1,5 +1,7 @@
 function find_trios(obj)
-            
+
+    disp('Finding trios');
+
     tripletArray = obj.triplets;
     cutoff = obj.trioCutoffMiso;
     parfor i=1:length(obj.triplets)
@@ -7,8 +9,26 @@ function find_trios(obj)
         currTriplet.calc_trios(cutoff);
         tripletArray(i) = currTriplet;
     end
+    
+    %Filter out all triplets that have all possible parents as trios
+    if strcmp(obj.OR,'KS')
+        nVariants = 24;
+    elseif strcmp(obj.OR,'NW')
+        nVariants = 12;
+    end
+    
+    toRemove = false(1,length(tripletArray));
+    for i=1:length(tripletArray)
+        numTrios = length(tripletArray(i).parentPhaseTrios);
+        if numTrios==nVariants
+            toRemove(i) = true;
+        end
+    end
+    tripletArray = tripletArray(~toRemove);
 
     obj.triplets = tripletArray;
+    
+    disp('Sorting trios');
     
     %Sort trios
     trioArray = [tripletArray.parentPhaseTrios];
@@ -21,12 +41,12 @@ function find_trios(obj)
     numTrios = length(trioArray);
     while currTrioInd<numTrios
         
-        trioMemberIDs = [trioArray.parentTripletIDs]';
+        trioMemberIDs = [trioArray.tripletGrainIDs]';
         trioAvgOrientations = [trioArray.avgOrientation];
         trioAvgOrientationsQ = [trioAvgOrientations.quat];
         
         currTrio = trioArray(currTrioInd);
-        currTrioMemberIDs = currTrio.parentTripletIDs';
+        currTrioMemberIDs = currTrio.tripletGrainIDs';
         
         %Mark trios that have overlapping members
         overlapping = any(ismember(trioMemberIDs,currTrioMemberIDs),2);
@@ -45,6 +65,6 @@ function find_trios(obj)
     
     obj.trios = trioArray;
     
-    disp('Done calculating trios');
+    disp(['Done calculating trios: ', num2str(length(trioArray)), ' trios found']);
 
 end

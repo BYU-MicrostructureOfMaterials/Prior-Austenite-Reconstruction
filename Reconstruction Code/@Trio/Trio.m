@@ -4,9 +4,11 @@ classdef Trio < handle
         
         PAorientations@Orientation
         avgOrientation@Orientation
-        parentTripletIDs %this var name needs to change
+        tripletID
+        tripletGrainIDs
         
         misoSum
+        maxMiso
         
     end
     
@@ -14,21 +16,21 @@ classdef Trio < handle
     methods
         
         %Constructor
-        function obj = Trio(PAorientations,tripletIDs)
+        function obj = Trio(PAorientations,tripletGrainIDs,tripletID,maxMiso)
             if nargin > 0
                 
                 if length(PAorientations)~= 3 || ~isa(PAorientations,'Orientation')
                     error('Error creating instance of Triplet class. Check input length and type');
                 end
                 
-                obj.parentTripletIDs = tripletIDs(:);
+                obj.tripletID = tripletID;
+                obj.tripletGrainIDs = tripletGrainIDs(:);
                 obj.PAorientations = PAorientations;
+                obj.maxMiso = maxMiso;
                 obj.trio_average();
                 
             end
         end
-        
-        %Plot parent triplet
         
     end
     
@@ -41,7 +43,7 @@ classdef Trio < handle
             
             load quat_cubic_symops;
             
-            [cluster_miso_sum, rotated_quats,avgQ] = q_average_orientation(quats,quat_cubic_symops); %THIS ASSUMES CUBIC SYMMETRY, NEEDS TO BE GENERALIZED
+            [rotated_quats, avgQ] = q_average_orientations_in_window(quats,quats(:,1),obj.maxMiso,quat_cubic_symops);
             
             avgO = Orientation(avgQ,'quat');
             obj.avgOrientation = avgO;
