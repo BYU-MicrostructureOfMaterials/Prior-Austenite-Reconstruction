@@ -80,9 +80,11 @@ handles.EndAcceptP.String = 1e-3;
 axes(handles.OriginalIPFMap)
 handles.grainmap.genIPFmap;
 
-% Update handles structure
+
 handles.DataPanel.Visible = 'off';
 handles.DataPanelBlank.Visible = 'on';
+
+% IMPORTANT: Update handles structure
 guidata(hObject, handles);
 
 % UIWAIT makes Reconstruction wait for user response (see UIRESUME)
