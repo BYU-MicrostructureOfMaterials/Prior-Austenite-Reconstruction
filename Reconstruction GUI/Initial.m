@@ -163,7 +163,7 @@ if exist(handles.GF1_Path,'file')
         grainmap = Grainmap(scandata,1);
         Reconstruction(grainmap);
     else
-        w = warndlg('Grain File Type I doesn''t exist');
+        w = warndlg('Grain File Type II doesn''t exist');
         uiwait(w,5)
     end
 else
