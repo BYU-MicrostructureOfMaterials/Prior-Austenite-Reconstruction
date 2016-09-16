@@ -63,9 +63,9 @@ phases = handles.grainmap.phasekey.phasename;
 phaseSel(1:size(phases,1),1) = {true};
 handles.PhaseTable.Data = [phases phaseSel];
 
-handles.TripletMinNeighborMiso.String = 0.0873;
-handles.TrioCutoffMiso.String = 0.0698;
-handles.clusterMisoTol.String = 5.2*pi/180;
+handles.TripletMinNeighborMiso.String = 2;
+handles.TrioCutoffMiso.String = 4;
+handles.clusterMisoTol.String = 5.2;
 
 handles.criticalOverlapRatio.String = 0.75;
 
@@ -79,10 +79,8 @@ handles.EndAcceptP.String = 1e-3;
 axes(handles.OriginalIPFMap)
 imshow(handles.grainmap.grainIPFmap.IPFimage);
 imagesc(handles.grainmap.grainIPFmap.IPFimage)
-=======
-imshow(handles.grainmap.grainIPFmap.IPFimage);
->>>>>>> 63c2e63316cf8d7724276966e3a1136184435512
 
+imshow(handles.grainmap.grainIPFmap.IPFimage);
 
 handles.DataPanel.Visible = 'off';
 handles.DataPanelBlank.Visible = 'on';
@@ -404,9 +402,9 @@ phaseIDs = handles.grainmap.phasekey.phaseID(phaseSel);
 steps = 5;
 w = waitbar(0,['Creating Reconstructor Object (Step 1/' num2str(steps) ') ...']);
 R = Reconstructor(handles.grainmap,GetPopupValue(handles.OrientationRelationship),phaseIDs);
-R.tripletMinNeighborMiso = str2double(handles.TripletMinNeighborMiso.String);
-R.trioCutoffMiso = str2double(handles.TrioCutoffMiso.String);
-R.clusterMisoTol = str2double(handles.clusterMisoTol.String);
+R.tripletMinNeighborMiso = str2double(handles.TripletMinNeighborMiso.String)*pi/180;
+R.trioCutoffMiso = str2double(handles.TrioCutoffMiso.String)*pi/180;
+R.clusterMisoTol = str2double(handles.clusterMisoTol.String)*pi/180;
 
 R.criticalOverlapRatio = str2double(handles.criticalOverlapRatio.String);
 
