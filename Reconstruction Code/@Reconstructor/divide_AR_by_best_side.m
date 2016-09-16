@@ -16,31 +16,34 @@ function divide_AR_by_best_side(obj,clusterA,clusterB)
     if BL_allocB<BL_allocA %Then keep grains in cluster B, remove from A
         
         %Remove grains from included non-member grain list
-        toMove = clusterA.includedNonMemberGrains(ismember([clusterA.includedNonMemberGrains.OIMgid],overlapIDs));
-        clusterA.includedNonMemberGrains = setdiff(clusterA.includedNonMemberGrains,toMove);
-        clusterA.inactiveGrains = union(clusterA.inactiveGrains,toMove);
-        
+        toMove = ismember([clusterA.includedNonMemberGrains.OIMgid],overlapIDs);
+        clusterA.inactiveGrains = [clusterA.inactiveGrains clusterA.includedNonMemberGrains(toMove)];
+        clusterA.includedNonMemberGrains = clusterA.includedNonMemberGrains(~toMove);
+    
         %Remove grains from member grains list, along with their PA
         %orientatons
-        toMove = clusterA.memberGrains(ismember([clusterA.memberGrains.OIMgid],overlapIDs));
-        clusterA.parentPhaseOrientations = clusterA.parentPhaseOrientations(~ismember([clusterA.memberGrains.OIMgid],overlapIDs));
-        clusterA.memberGrains = setdiff(clusterA.memberGrains,toMove);
-        clusterA.inactiveGrains = union(clusterA.inactiveGrains,toMove);
+        toMove = ismember([clusterA.memberGrains.OIMgid],overlapIDs);
+        clusterA.inactiveGrains = [clusterA.inactiveGrains clusterA.memberGrains(toMove)];
+        clusterA.parentPhaseOrientations = clusterA.parentPhaseOrientations(~toMove);
+        clusterA.memberGrains = clusterA.memberGrains(~toMove);
         
     else %Then keep grains in cluster A, remove from B
         
         %Remove grains from included non-member grain list
-        toMove = clusterB.includedNonMemberGrains(ismember([clusterB.includedNonMemberGrains.OIMgid],overlapIDs));
-        clusterB.includedNonMemberGrains = setdiff(clusterB.includedNonMemberGrains,toMove);
-        clusterB.inactiveGrains = union(clusterB.inactiveGrains,toMove);
+        toMove = ismember([clusterB.includedNonMemberGrains.OIMgid],overlapIDs);
+        clusterB.inactiveGrains = [clusterB.inactiveGrains clusterB.includedNonMemberGrains(toMove)];
+        clusterB.includedNonMemberGrains = clusterB.includedNonMemberGrains(~toMove);
         
         %Remove grains from member grains list, along with their PA
         %orientatons
-        toMove = clusterB.memberGrains(ismember([clusterB.memberGrains.OIMgid],overlapIDs));
-        clusterB.parentPhaseOrientations = clusterB.parentPhaseOrientations(~ismember([clusterB.memberGrains.OIMgid],overlapIDs));
-        clusterB.memberGrains = setdiff(clusterB.memberGrains,toMove);
-        clusterB.inactiveGrains = union(clusterB.inactiveGrains,toMove);
+        toMove = ismember([clusterB.memberGrains.OIMgid],overlapIDs);
+        clusterB.inactiveGrains = [clusterB.inactiveGrains clusterB.memberGrains(toMove)];
+        clusterB.parentPhaseOrientations = clusterB.parentPhaseOrientations(~toMove);
+        clusterB.memberGrains = clusterB.memberGrains(~toMove);
         
     end
+    
+    clusterA.calc_metadata(gIDmat,'filled');
+    clusterB.calc_metadata(gIDmat,'filled');
 
 end

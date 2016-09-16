@@ -7,6 +7,7 @@ classdef DaughterCluster < handle
         memberGrains@Grain = Grain.empty;
         includedNonMemberGrains@Grain = Grain.empty;
         inactiveGrains@Grain = Grain.empty;
+        alternateOrientationClusterIDs
         
         parentPhaseOrientations  %This variable name is misleading and needs to be changed
         clusterOCenter

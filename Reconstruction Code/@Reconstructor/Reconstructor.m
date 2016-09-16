@@ -23,12 +23,12 @@ classdef Reconstructor < handle
         reconstructionPhases
         tripletMinNeighborMiso = 2*pi/180;%5*pi/180;
         trioCutoffMiso = 4*pi/180;
+        clusterMisoTol = 7*pi/180;
         
         %%%Cleanup options
           %Cluster placement options
-        minInteriorOverlapRatio = .75;
-        minRedundantOverlapRatio = .9;
-        redundantClusterMiso = 10*pi/180;
+        criticalOverlapRatio = .75; 
+        ambiguityMethod
         
           %SA algorithm options
         numTemps = 70;
@@ -62,13 +62,15 @@ classdef Reconstructor < handle
                     %Calculate possible parents for each grain to reconstruct
                     %Filter grains that are not a phase to be reconstructed
 
-                    daughterGrainsHold = Grain.empty;
+                    daughterGrainsHold = repmat(Grain(),1,sum(ismember([grainmap.grains.phaseID],reconstructionPhases)));
+                    grainCount = 1;
                     for i=1:length(grainmap.grains)
                         currGrain = grainmap.grains(i);
                         phaseID = currGrain.phaseID;
                         if ~isempty(phaseID) && ismember(phaseID,reconstructionPhases)
                             currGrain.set_transformationPhase(OR,'daughter');
-                            daughterGrainsHold = [daughterGrainsHold currGrain];
+                            daughterGrainsHold(grainCount) = currGrain;
+                            grainCount = grainCount + 1;
                         end
                     end
 
@@ -86,27 +88,26 @@ classdef Reconstructor < handle
         %Call each triplet's calc_trios function
         find_trios(obj)
         
-        %Grow clusters from every trio found
+        %Grow clusters from trios found
         grow_clusters_from_trios(obj)
-        
-        gen_cluster_IDmat(obj)
-        
-        gen_reconstructed_confidence_mat(obj);
         
         %Place clusters, divide ARs
         place_clusters(obj,clusters)
         
-        %Fill unallocated regions       
-        fill_unalloc_regions_by_expansion(obj,minsize)
-        
+        %Overlapping regions
         divide_AR_by_best_side(obj,clusterA,clusterB)     
         
         divide_AR_by_SA(obj,clusterA,clusterB)
         
-        classify_overlap(obj,clusterA,clusterB)
+        %Fill unallocated regions       
+        fill_unalloc_regions_by_expansion(obj,minsize)
         
-        %Plot IPFmap of clusters found
+        %Generate reconstructed IPF map
         genReconstructedIPFmap(obj,filledtype)
+        
+        gen_cluster_IDmat(obj)
+        
+        gen_reconstructed_confidence_mat(obj);
         
     end
     

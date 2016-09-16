@@ -3,17 +3,18 @@ function grow_clusters_from_trios(obj)
     disp('Growing clusters from trios');
 
     clustOR = obj.OR;
+    misoTol = obj.clusterMisoTol;
 
     trioArray = obj.trios;
     trioGrainIDs = [trioArray.tripletGrainIDs]';
     trioAvgO = [trioArray.avgOrientation];
     trioAvgQ = [trioAvgO.quat];
-    
+
     clusterCount = 1;
     while ~isempty(trioArray);
 
         %Grow cluster
-        currClust = DaughterCluster(trioArray(1),clustOR);
+        currClust = DaughterCluster(trioArray(1),clustOR,misoTol);
         currClust.grow_cluster(obj);
         clusterArray(clusterCount) = currClust;
         clusterCount = clusterCount + 1;

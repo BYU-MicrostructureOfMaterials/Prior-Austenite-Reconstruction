@@ -1,9 +1,9 @@
 function place_clusters(obj,clusters)
 
-if nargin==2 %First placement of clusters, start from blank clusterIDmat
+if nargin==1 %First placement of clusters, start from blank clusterIDmat
     clusterArray = obj.clusters;
     clusterIDmat = int32(zeros(size(obj.grainmap.gIDmat)));
-elseif nargin==3 %Adding clusters to IPFmap, start from current clusterIDmat
+elseif nargin==2 %Adding clusters to IPFmap, start from current clusterIDmat
     clusterArray = clusters;
     clusterIDmat = obj.clusterIDmat;
 end
@@ -36,27 +36,36 @@ for currClust=clusterArray
             compClust = placedClusters([placedClusters.ID]==currID);
             
             %Calculate data describing overlap
+            if strcmp(obj.OR,'KS')
+                load KS_satellite_PA_orientations;
+            elseif strcmp(obj.OR,'NW')
+                load NW_satellite_PA_orientations;
+            end
+            
+            for i=1:length(satellite_PA_orientations(1,:))
+                satQ(:,i) = quatLmult(satellite_PA_orientations(:,i),compClust.clusterOCenter.quat);
+            end
+            
             currOverlapRatio = sum(sum(overlap))/sum(sum(currClust.scanLocations));
             compOverlapRatio = sum(sum(overlap))/sum(sum(compClust.scanLocations));
             PAmiso = q_min_distfun(currClust.clusterOCenter.quat',compClust.clusterOCenter.quat','cubic');
+            satPAmiso = min(q_min_distfun(currClust.clusterOCenter.quat',satQ','cubic'));
             
             %Determine nature of overlap
             overlapType = 'ambiguous'; %Default
             toPlace = false; %Default
             
-            if ~any([currOverlapRatio compOverlapRatio] < obj.minRedundantOverlapRatio) %Both over
-                if PAmiso<obj.redundantClusterMiso
+            if ~any([currOverlapRatio compOverlapRatio] < obj.criticalOverlapRatio) %Both over
+                if PAmiso<compClust.misoTolerance 
                     overlapType = 'redundant';
-                else
+                elseif satPAmiso<compClust.misoTolerance 
                     overlapType = 'alternateOrientation';
                 end
-            elseif any([currOverlapRatio compOverlapRatio] > obj.minRedundantOverlapRatio) %One over
-                if PAmiso<obj.redundantClusterMiso
+            elseif currOverlapRatio > obj.criticalOverlapRatio %Current cluster is over
+                if PAmiso<compClust.misoTolerance
                     overlapType = 'redundant';
-                else
-                    if currOverlapRatio>obj.minInteriorOverlapRatio
-                        overlapType = 'interior';
-                    end
+                elseif satPAmiso<compClust.misoTolerance 
+                    overlapType = 'interior';
                 end
             end
             
@@ -72,6 +81,7 @@ for currClust=clusterArray
                     overlappingIDs = [];
                 case 'alternateOrientation'
                     alternateOrientationClusters = [alternateOrientationClusters currClust];
+                    compClust.alternateOrientationClusterIDs = [compClust.alternateOrientationClusterIDs currClust.ID];
                     %Something needs to be done to associate alternate
                     %orientation clusters with their placed cluster
                     overlappingIDs = [];
@@ -94,7 +104,6 @@ for currClust=clusterArray
     %to currClust
     if toPlace
         placedClusters = [placedClusters currClust];
-        disp(length(placedClusters));
         clusterIDmat(currClust.scanLocations) = currClust.ID;
     end
  
@@ -112,7 +121,15 @@ if ~isempty(ambiguities)
         clusterB = obj.clusters([obj.clusters.ID]==ambiguities(i,2));
 
         if ~isempty(clusterA) && ~isempty(clusterB)
-            obj.divide_AR_by_SA(clusterA,clusterB);
+            
+            switch obj.ambiguityMethod
+                case 'Simulated Annealing'
+                    obj.divide_AR_by_SA(clusterA,clusterB);
+                case 'Best side (fast)'
+                    obj.divide_AR_by_best_side(clusterA,clusterB);
+            end
+            
+            
         end
     end
 end

@@ -22,7 +22,7 @@ function varargout = Reconstruction(varargin)
 
 % Edit the above text to modify the response to help Reconstruction
 
-% Last Modified by GUIDE v2.5 15-Sep-2016 11:53:42
+% Last Modified by GUIDE v2.5 15-Sep-2016 22:46:50
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -57,20 +57,19 @@ handles.output = hObject;
 
 handles.grainmap = varargin{1};
 
-handles.ClusteringOptions.String = {'KS','NW'};
-handles.ClusteringOptions.Value = 1;
+handles.OrientationRelationship.String = {'KS','NW'};
+handles.OrientationRelationship.Value = 1;
 phases = handles.grainmap.phasekey.phasename;
 phaseSel(1:size(phases,1),1) = {true};
 handles.PhaseTable.Data = [phases phaseSel];
 
 handles.TripletMinNeighborMiso.String = 0.0873;
 handles.TrioCutoffMiso.String = 0.0698;
-handles.misotolerance.String = 5.2*pi/180;
+handles.clusterMisoTol.String = 5.2*pi/180;
 
-handles.MinRedundantOverlapRatio.String = 0.5;
-handles.MinInteriorOverlapRatio.String = 0.9;
-handles.RedundantClusterMiso.String = 0.1745;
-handles.AmbigResMethod.String = {'Simulated Annealing','Other Option'};
+handles.criticalOverlapRatio.String = 0.75;
+
+handles.AmbigResMethod.String = {'Simulated Annealing','Best side (fast)'};
 handles.AmbigResMethod.Value = 1;
 handles.NumTemps.String = 70;
 handles.NumTrials.String = 70;
@@ -78,7 +77,11 @@ handles.StartAcceptP.String = 0.95;
 handles.EndAcceptP.String = 1e-3;
 
 axes(handles.OriginalIPFMap)
+imshow(handles.grainmap.grainIPFmap.IPFimage);
 imagesc(handles.grainmap.grainIPFmap.IPFimage)
+=======
+imshow(handles.grainmap.grainIPFmap.IPFimage);
+>>>>>>> 63c2e63316cf8d7724276966e3a1136184435512
 
 
 handles.DataPanel.Visible = 'off';
@@ -102,19 +105,19 @@ function varargout = Reconstruction_OutputFcn(hObject, eventdata, handles)
 varargout{1} = handles.output;
 
 
-% --- Executes on selection change in ClusteringOptions.
-function ClusteringOptions_Callback(hObject, eventdata, handles)
-% hObject    handle to ClusteringOptions (see GCBO)
+% --- Executes on selection change in OrientationRelationship.
+function OrientationRelationship_Callback(hObject, eventdata, handles)
+% hObject    handle to OrientationRelationship (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: contents = cellstr(get(hObject,'String')) returns ClusteringOptions contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from ClusteringOptions
+% Hints: contents = cellstr(get(hObject,'String')) returns OrientationRelationship contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from OrientationRelationship
 
 
 % --- Executes during object creation, after setting all properties.
-function ClusteringOptions_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to ClusteringOptions (see GCBO)
+function OrientationRelationship_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to OrientationRelationship (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -126,18 +129,18 @@ end
 
 
 
-function misotolerance_Callback(hObject, eventdata, handles)
-% hObject    handle to misotolerance (see GCBO)
+function clusterMisoTol_Callback(hObject, eventdata, handles)
+% hObject    handle to clusterMisoTol (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of misotolerance as text
-%        str2double(get(hObject,'String')) returns contents of misotolerance as a double
+% Hints: get(hObject,'String') returns contents of clusterMisoTol as text
+%        str2double(get(hObject,'String')) returns contents of clusterMisoTol as a double
 
 
 % --- Executes during object creation, after setting all properties.
-function misotolerance_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to misotolerance (see GCBO)
+function clusterMisoTol_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to clusterMisoTol (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -344,18 +347,18 @@ end
 
 
 
-function MinInteriorOverlapRatio_Callback(hObject, eventdata, handles)
-% hObject    handle to MinInteriorOverlapRatio (see GCBO)
+function criticalOverlapRatio_Callback(hObject, eventdata, handles)
+% hObject    handle to criticalOverlapRatio (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of MinInteriorOverlapRatio as text
-%        str2double(get(hObject,'String')) returns contents of MinInteriorOverlapRatio as a double
+% Hints: get(hObject,'String') returns contents of criticalOverlapRatio as text
+%        str2double(get(hObject,'String')) returns contents of criticalOverlapRatio as a double
 
 
 % --- Executes during object creation, after setting all properties.
-function MinInteriorOverlapRatio_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to MinInteriorOverlapRatio (see GCBO)
+function criticalOverlapRatio_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to criticalOverlapRatio (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -400,19 +403,18 @@ phaseIDs = handles.grainmap.phasekey.phaseID(phaseSel);
 % Create Reconstructor
 steps = 5;
 w = waitbar(0,['Creating Reconstructor Object (Step 1/' num2str(steps) ') ...']);
-R = Reconstructor(handles.grainmap,GetPopupValue(handles.ClusteringOptions),phaseIDs);
-R.tripletMinNeighborMiso = handles.TripletMinNeighborMiso.Value;
-R.trioCutoffMiso = handles.TrioCutoffMiso.Value;
-R.misotolerance = handles.misotolerance.Value;
+R = Reconstructor(handles.grainmap,GetPopupValue(handles.OrientationRelationship),phaseIDs);
+R.tripletMinNeighborMiso = str2double(handles.TripletMinNeighborMiso.String);
+R.trioCutoffMiso = str2double(handles.TrioCutoffMiso.String);
+R.clusterMisoTol = str2double(handles.clusterMisoTol.String);
 
-R.minRedundantOverlapRatio = handles.MinRedundantOverlapRatio.Value;
-R.minInteriorOverlapRatio = handles.MinInteriorOverlapRatio.Value;
-R.redundantClusterMiso = handles.RedundantClusterMiso.Value;
+R.criticalOverlapRatio = str2double(handles.criticalOverlapRatio.String);
 
-R.numTemps = handles.NumTemps.Value;
-R.numTrials = handles.NumTrials.Value;
-R.startAcceptP = handles.StartAcceptP.Value;
-R.endAcceptP = handles.EndAcceptP.Value;
+R.ambiguityMethod = handles.AmbigResMethod.String{handles.AmbigResMethod.Value};
+R.numTemps = str2num(handles.NumTemps.String);
+R.numTrials = str2num(handles.NumTrials.String);
+R.startAcceptP = str2double(handles.StartAcceptP.String);
+R.endAcceptP = str2double(handles.EndAcceptP.String);
 
 % Find Triplets
 waitbar(1/steps,w,['Finding triplets (Step 2/' num2str(steps) ') ...']);
@@ -433,8 +435,9 @@ R.place_clusters;
 % Fill Unallocated Regions
 %R.fill_unalloc_regions;
 
+R.genReconstructedIPFmap('filled');
 axes(handles.ReconstructedIPFMap)
-R.genReconstructedIPFmap;
+imshow(R.reconstructedIPFmap.IPFimage);
 
 waitbar(1,w,'Finished Reconstruction')
 close(w)

@@ -1,8 +1,9 @@
 function [] = pole_figure_by_quat(quats,phase_vect,phasenum,markerstring,mark_size,plotfig)
 
-% if nargin<7
-%     error('Not enough input arguments');
-% end
+if isempty(quats)
+    warning('Input quaternion array is empty');
+    return
+end
 
 %create pole figure data
 count = 1; %not all phases are plotted, and so some lines in the .ang file are skipped

@@ -178,12 +178,13 @@ function update_clusters(gIDmat,clusterA,clusterB,regionA_result,regionB_result)
     AMembersToMove = ~ismember([clusterA.memberGrains.OIMgid],AfinalGrains);
     AIncludedNonMembersToMove = ~ismember([clusterA.includedNonMemberGrains.OIMgid],AfinalGrains);
     if any(AMembersToMove)
-        clusterA.inactiveGrains = union(clusterA.inactiveGrains,clusterA.memberGrains(AMembersToMove));
+        clusterA.inactiveGrains = [clusterA.inactiveGrains clusterA.memberGrains(AMembersToMove)];
         clusterA.memberGrains = clusterA.memberGrains(~AMembersToMove);
+        clusterA.parentPhaseOrientations = clusterA.parentPhaseOrientations(~AMembersToMove);
     end
 
     if any(AIncludedNonMembersToMove)
-        clusterA.inactiveGrains = union(clusterA.inactiveGrains,clusterA.includedNonMemberGrains(AIncludedNonMembersToMove));
+        clusterA.inactiveGrains = [clusterA.inactiveGrains clusterA.includedNonMemberGrains(AIncludedNonMembersToMove)];
         clusterA.includedNonMemberGrains = clusterA.includedNonMemberGrains(~AIncludedNonMembersToMove);
     end
     clusterA.calc_metadata(reconstructor.grainmap.gIDmat,'filled');
@@ -193,12 +194,17 @@ function update_clusters(gIDmat,clusterA,clusterB,regionA_result,regionB_result)
     BMembersToMove = ~ismember([clusterB.memberGrains.OIMgid],BfinalGrains);
     BIncludedNonMembersToMove = ~ismember([clusterB.includedNonMemberGrains.OIMgid],BfinalGrains);
     if any(BMembersToMove)
-        clusterB.inactiveGrains = union(clusterB.inactiveGrains,clusterB.memberGrains(BMembersToMove));
+        clusterB.inactiveGrains = [clusterB.inactiveGrains clusterB.memberGrains(BMembersToMove)];
         clusterB.memberGrains = clusterB.memberGrains(~BMembersToMove);
+        clusterB.parentPhaseOrientations = clusterB.parentPhaseOrientations(~BMembersToMove);
     end
 
     if any(BIncludedNonMembersToMove)
-        clusterB.inactiveGrains = union(clusterB.inactiveGrains,clusterB.includedNonMemberGrains(BIncludedNonMembersToMove));
+        try
+        clusterB.inactiveGrains = [clusterB.inactiveGrains clusterB.includedNonMemberGrains(BIncludedNonMembersToMove)];
+        catch ME
+            disp('here');
+        end
         clusterB.includedNonMemberGrains = clusterB.includedNonMemberGrains(~BIncludedNonMembersToMove);
     end
     clusterB.calc_metadata(reconstructor.grainmap.gIDmat,'filled');

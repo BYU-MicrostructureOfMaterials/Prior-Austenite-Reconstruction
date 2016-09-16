@@ -160,7 +160,7 @@ if exist(handles.GF1_Path,'file')
     if exist(handles.GF2_Path,'file')
         % Read in data 
         scandata = Scandata(handles.GF1_Path,handles.GF2_Path);
-        grainmap = Grainmap(scandata,1);
+        grainmap = Grainmap(scandata);
         Reconstruction(grainmap);
     else
         w = warndlg('Grain File Type II doesn''t exist');

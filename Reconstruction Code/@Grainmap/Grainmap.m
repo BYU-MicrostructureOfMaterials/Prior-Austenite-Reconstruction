@@ -43,11 +43,25 @@ classdef Grainmap < handle
                     error('Grainmap constructor input must be a Scandata object');
                 end
                 
+                
                 obj.scandata = scandata;
+                
+                steps = 4;
+                w = waitbar(0,['Creating Grainmap Object (Step 1/' num2str(steps) ') ...']);
                 obj.import_scandata(scandata);
                 
+                waitbar(1/steps,w,['Generating grain ID matrices (Step 2/' num2str(steps) ') ...']);
                 obj.gen_IDmats;
+                
+                waitbar(2/steps,w,['Generaging grain IPF map (Step 3/' num2str(steps) ') ...']);
                 obj.genIPFmap;
+                
+                waitbar(3/steps,w,['Finding grain neighbors (Step 4/' num2str(steps) ') ...']);
+                obj.find_neighbors;
+                
+                waitbar(1,w,'Finished Reconstruction')
+                close(w)
+
                 
             end
             
