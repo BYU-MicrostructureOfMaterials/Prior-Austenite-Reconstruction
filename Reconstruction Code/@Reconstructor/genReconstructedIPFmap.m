@@ -25,8 +25,5 @@ function genReconstructedIPFmap(obj,filledtype)
 
     obj.reconstructedIPFmap = reconstructedIPFmap;
     
-    figure;
-    imshow(reconstructedIPFmap.IPFimage);
-    
 
 end
