@@ -78,7 +78,7 @@ handles.StartAcceptP.String = 0.95;
 handles.EndAcceptP.String = 1e-3;
 
 axes(handles.OriginalIPFMap)
-handles.grainmap.genIPFmap;
+imagesc(handles.grainmap.grainIPFmap.IPFimage)
 
 
 handles.DataPanel.Visible = 'off';
