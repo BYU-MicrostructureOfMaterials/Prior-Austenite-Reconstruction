@@ -20,7 +20,7 @@ function fill_cluster(obj,grainmap)
     filledLocs = region_fill_holes(clusterBW,4);
     
     interiorGrainIDs = unique(gIDmat(and(filledLocs,~clusterBW)));
-    obj.includedNonMemberGrains = union(obj.includedNonMemberGrains,grainmap.grains(ismember([grainmap.grains.OIMgid],interiorGrainIDs)));
+    obj.includedNonMemberGrains = [obj.includedNonMemberGrains grainmap.grains(ismember([grainmap.grains.OIMgid],interiorGrainIDs))];
     obj.calc_metadata(grainmap.gIDmat,'filled',true);
 
 end

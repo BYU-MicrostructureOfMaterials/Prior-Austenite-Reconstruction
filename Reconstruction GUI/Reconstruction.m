@@ -22,7 +22,7 @@ function varargout = Reconstruction(varargin)
 
 % Edit the above text to modify the response to help Reconstruction
 
-% Last Modified by GUIDE v2.5 15-Sep-2016 22:46:50
+% Last Modified by GUIDE v2.5 17-Sep-2016 16:05:43
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -430,8 +430,6 @@ R.grow_clusters_from_trios;
 waitbar(4/steps,w,['Placing clusters (Step 5/' num2str(steps) ') ...']);
 R.place_clusters;
 
-% Fill Unallocated Regions
-%R.fill_unalloc_regions;
 
 R.genReconstructedIPFmap('filled');
 axes(handles.ReconstructedIPFMap)
@@ -442,6 +440,10 @@ close(w)
 
 handles.DataPanel.Visible = 'on';
 handles.DataPanelBlank.Visible = 'off';
+
+handles.reconstructor = R;
+handles.selecteddata = SelectedData();
+guidata(hObject, handles);
 
 
 function value = GetPopupValue(Popup)
@@ -454,7 +456,7 @@ function SelectDataPoints_Callback(hObject, eventdata, handles)
 % hObject    handle to SelectDataPoints (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
+disp('here');
 
 % --- Executes on button press in SelectRegion.
 function SelectRegion_Callback(hObject, eventdata, handles)
@@ -531,3 +533,31 @@ function WriteAngFile_Callback(hObject, eventdata, handles)
 % hObject    handle to WriteAngFile (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes on button press in Full_IPF.
+function Full_IPF_Callback(hObject, eventdata, handles)
+% hObject    handle to Full_IPF (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of Full_IPF
+
+
+% --- Executes on button press in PAOnly_IPF.
+function PAOnly_IPF_Callback(hObject, eventdata, handles)
+% hObject    handle to PAOnly_IPF (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of PAOnly_IPF
+
+
+% --- Executes on button press in PA_member_grain.
+function PA_member_grain_Callback(hObject, eventdata, handles)
+% hObject    handle to PA_member_grain (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of PA_member_grain
+
