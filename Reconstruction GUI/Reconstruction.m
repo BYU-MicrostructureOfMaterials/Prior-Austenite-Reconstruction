@@ -22,7 +22,7 @@ function varargout = Reconstruction(varargin)
 
 % Edit the above text to modify the response to help Reconstruction
 
-% Last Modified by GUIDE v2.5 17-Sep-2016 16:05:43
+% Last Modified by GUIDE v2.5 17-Sep-2016 17:28:56
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -451,32 +451,90 @@ list = Popup.String;
 value = list{Popup.Value};
 
 
-% --- Executes on button press in SelectDataPoints.
-function SelectDataPoints_Callback(hObject, eventdata, handles)
-% hObject    handle to SelectDataPoints (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-disp('here');
-
-% --- Executes on button press in SelectRegion.
-function SelectRegion_Callback(hObject, eventdata, handles)
-% hObject    handle to SelectRegion (see GCBO)
+% --- Executes on button press in SelectGrainDataPoints.
+function SelectGrainDataPoints_Callback(hObject, eventdata, handles)
+% hObject    handle to SelectGrainDataPoints (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+selectedData = handles.selecteddata;
+R = handles.reconstructor;
+IDs = selectedData.point_select_IPF_data(handles.OriginalIPFMap,R,'daughterGrains');
+grains = R.grainmap.grains(ismember([R.grainmap.grains.OIMgid],IDs));
+selectedData.add_data(grains);
 
-% --- Executes on button press in PlotClusterData.
-function PlotClusterData_Callback(hObject, eventdata, handles)
-% hObject    handle to PlotClusterData (see GCBO)
+
+
+% --- Executes on button press in SelectGrainRegion.
+function SelectGrainRegion_Callback(hObject, eventdata, handles)
+% hObject    handle to SelectGrainRegion (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+selectedData = handles.selecteddata;
+R = handles.reconstructor;
+[BW,IDs] = selectedData.poly_select_IPF_data(handles.OriginalIPFMap,R,'daughterGrains');
+grains = R.grainmap.grains(ismember([R.grainmap.grains.OIMgid],IDs));
+selectedData.add_data(grains);
+
+
+% --- Executes on button press in PlotSelectedData.
+function PlotSelectedData_Callback(hObject, eventdata, handles)
+% hObject    handle to PlotSelectedData (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+inclGrains = handles.toggle_grain_orientations.Value;
+inclPosParents = handles.toggle_theoretical_parents.Value;
+inclClusters = handles.toggle_cluster_orientations.Value;
+inclPosDaughters = handles.toggle_theoretical_daughters.Value;
+inclDaughters = handles.toggle_daughter_orientations.Value;
+inclNonMembers = handles.toggle_included_non_member_grains.Value;
 
-% --- Executes on button press in PlotDaughterGrainData.
-function PlotDaughterGrainData_Callback(hObject, eventdata, handles)
-% hObject    handle to PlotDaughterGrainData (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
+h = figure;
+
+if inclGrains
+    grainsToPlot = handles.selecteddata.selectedGrains;
+    grainOrientations = [grainsToPlot.orientation];
+    grainQuats = [grainOrientations.quat];
+    pole_figure_by_quat(grainQuats','b*',5,h.Number);
+end
+
+if inclPosParents
+    grains = handles.selecteddata.selectedGrains;
+    grainPosParentOrientations = [grains.newPhaseOrientations];
+    posParentQuats = [grainPosParentOrientations.quat];
+    pole_figure_by_quat(posParentQuats','bd',3,h.Number);
+end
+
+if inclClusters
+    clusters = handles.selecteddata.selectedClusters;
+    clusterOrientations = [clusters.clusterOCenter];
+    clusterQuats = [clusterOrientations.quat];
+    pole_figure_by_quat(clusterQuats','r*',5,h.Number);
+end
+
+if inclPosDaughters
+    clusters = handles.selecteddata.selectedClusters;
+    posDaughterOrientations = [clusters.theoreticalVariants];
+    posDaughterQuats = [posDaughterOrientations.quat];
+    pole_figure_by_quat(posDaughterQuats','rd',3,h.Number);
+end
+
+if inclDaughters
+    clusters = handles.selecteddata.selectedClusters;
+    members = [clusters.memberGrains];
+    daughterOrientations = [members.orientation];
+    daughterQuats = [daughterOrientations.quat];
+    pole_figure_by_quat(daughterQuats','k.',1,h.Number);
+end
+
+if inclNonMembers
+    clusters = handles.selecteddata.selectedClusters;
+    inclNonMembers = [clusters.includedNonMemberGrains];
+    inclNonMemberOrientations = [inclNonMembers.orientation];
+    inclNonMemberQuats = [inclNonMemberOrientations.quat];
+    pole_figure_by_quat(inclNonMemberQuats','k.',1,h.Number);
+end
 
 
 % --- Executes on button press in ClearSelectedData.
@@ -485,6 +543,8 @@ function ClearSelectedData_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+handles.selecteddata.clear_grains;
+handles.selecteddata.clear_clusters;
 
 % --- Executes on button press in ReassignDaughterRegion.
 function ReassignDaughterRegion_Callback(hObject, eventdata, handles)
@@ -535,29 +595,80 @@ function WriteAngFile_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 
-% --- Executes on button press in Full_IPF.
-function Full_IPF_Callback(hObject, eventdata, handles)
-% hObject    handle to Full_IPF (see GCBO)
+% --- Executes on button press in toggle_cluster_orientations.
+function toggle_cluster_orientations_Callback(hObject, eventdata, handles)
+% hObject    handle to toggle_cluster_orientations (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hint: get(hObject,'Value') returns toggle state of Full_IPF
+% Hint: get(hObject,'Value') returns toggle state of toggle_cluster_orientations
 
 
-% --- Executes on button press in PAOnly_IPF.
-function PAOnly_IPF_Callback(hObject, eventdata, handles)
-% hObject    handle to PAOnly_IPF (see GCBO)
+% --- Executes on button press in toggle_theoretical_daughters.
+function toggle_theoretical_daughters_Callback(hObject, eventdata, handles)
+% hObject    handle to toggle_theoretical_daughters (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hint: get(hObject,'Value') returns toggle state of PAOnly_IPF
+% Hint: get(hObject,'Value') returns toggle state of toggle_theoretical_daughters
 
 
-% --- Executes on button press in PA_member_grain.
-function PA_member_grain_Callback(hObject, eventdata, handles)
-% hObject    handle to PA_member_grain (see GCBO)
+% --- Executes on button press in toggle_daughter_orientations.
+function toggle_daughter_orientations_Callback(hObject, eventdata, handles)
+% hObject    handle to toggle_daughter_orientations (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hint: get(hObject,'Value') returns toggle state of PA_member_grain
+% Hint: get(hObject,'Value') returns toggle state of toggle_daughter_orientations
+
+
+% --- Executes on button press in toggle_included_non_member_grains.
+function toggle_included_non_member_grains_Callback(hObject, eventdata, handles)
+% hObject    handle to toggle_included_non_member_grains (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of toggle_included_non_member_grains
+
+
+% --- Executes on button press in toggle_grain_orientations.
+function toggle_grain_orientations_Callback(hObject, eventdata, handles)
+% hObject    handle to toggle_grain_orientations (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of toggle_grain_orientations
+
+
+% --- Executes on button press in toggle_theoretical_parents.
+function toggle_theoretical_parents_Callback(hObject, eventdata, handles)
+% hObject    handle to toggle_theoretical_parents (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of toggle_theoretical_parents
+
+
+% --- Executes on button press in SelectClusterDataPoints.
+function SelectClusterDataPoints_Callback(hObject, eventdata, handles)
+% hObject    handle to SelectClusterDataPoints (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+selectedData = handles.selecteddata;
+R = handles.reconstructor;
+IDs = selectedData.point_select_IPF_data(handles.ReconstructedIPFMap,R,'PA');
+clusters = R.clusters(ismember([R.clusters.ID],IDs));
+selectedData.add_data(clusters);
+
+
+% --- Executes on button press in SelectClusterRegion.
+function SelectClusterRegion_Callback(hObject, eventdata, handles)
+% hObject    handle to SelectClusterRegion (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+selectedData = handles.selecteddata;
+R = handles.reconstructor;
+[BW, IDs] = selectedData.poly_select_IPF_data(handles.ReconstructedIPFMap,R,'PA');
+clusters = R.clusters(ismember([R.clusters.ID],IDs));
+selectedData.add_data(clusters);
 

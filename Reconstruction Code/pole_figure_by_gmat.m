@@ -11,11 +11,16 @@
 %                  plotted (i.e. 'bd' for blue diamonds)
 %   mark_size - integer specifying marker size in plot
 %   fignum2D - figure number to plot 2D pole figure
-%   include3D - true/false use true to plot pole data on a sphere
 %   fignum3D - figure number to plot 3D pole data
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [] = pole_figure_by_gmat(gmats,markerstring,mark_size,fignum2D,include3D,fignum3D)
+function [] = pole_figure_by_gmat(gmats,markerstring,mark_size,fignum2D,fignum3D)
+
+if nargin==4
+    include3D = false;
+elseif nargin == 5
+    include3D = true;
+end 
 
 %create pole figure data
 for i=1:length(gmats(1,1,:))

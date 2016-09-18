@@ -16,10 +16,6 @@ classdef DaughterCluster < handle
         clusterIPFmap
         scanLocations
         
-    end
-        
-    properties %(SetAccess = private)
-        
         OR
         theoreticalVariants@Orientation
         existingVariants

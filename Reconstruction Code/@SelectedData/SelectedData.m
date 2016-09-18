@@ -1,13 +1,13 @@
 classdef SelectedData < handle
     
     
-    properties
+   properties
         
-        selectedGrains = Grain.empty;
-        selectedClusters = DaughterCluster.empty;
-        selectedOrientations = Orientation.empty;
+       selectedGrains = Grain.empty;
+       selectedClusters = DaughterCluster.empty;
+       selectedOrientations = Orientation.empty;
     
-    end
+   end
     
    methods
        
@@ -33,7 +33,7 @@ classdef SelectedData < handle
            
        end
        
-       function add_data(obj)
+       function add_data(obj,data)
            
            if isa(data,'Grain')
                    
@@ -68,9 +68,9 @@ classdef SelectedData < handle
    
    methods (Static)
        
-       IDs = point_select_IPF_data(I,id_mat);
+       IDs = point_select_IPF_data(I,reconstructor, type);
        
-       [BW,IDs] = poly_select_IPF_data(I, id_mat)
+       [BW,IDs] = poly_select_IPF_data(I, reconstructor, type)
        
    end
     

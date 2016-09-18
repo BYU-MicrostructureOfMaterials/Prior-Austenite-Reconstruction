@@ -1,20 +1,22 @@
-function [BW,IDs] = poly_select_IPF_data(I, id_mat)
+function [BW,IDs] = poly_select_IPF_data(I, reconstructor, type)
 
-[nrowsI,ncolsI] = size(I(:,:,1));
-[nrowsMat,ncolsMat] = size(id_mat);
-
-if nrowsI~=nrowsMat || ncolsI~=ncolsMat
-    error('Input image and ID matrix are not the same size');
+switch type
+    case 'PA'
+        id_mat = reconstructor.clusterIDmat;
+        image = reconstructor.reconstructedIPFmap.IPFimage;
+    case 'daughterGrains'
+        id_mat = reconstructor.grainmap.gIDmat;
+        image = reconstructor.grainmap.grainIPFmap.IPFimage;
 end
 
-BW = false(nrowsI,ncolsI);
+[nrowsMat,ncolsMat] = size(id_mat);
 
-[X,Y] = meshgrid(1:ncolsI,1:nrowsI);
+BW = false(nrowsMat,ncolsMat);
+
+[X,Y] = meshgrid(1:ncolsMat,1:nrowsMat);
 X = X(:);
 Y = Y(:);
 
-figure;
-imshow(I);
 hold on;
 
 xset = [];
@@ -28,7 +30,7 @@ while pickAnother
     [x,y,button] = ginput(1);
     
     if isempty(button) || ~ismember(button,[1 2 3])
-        imshow(I);
+        imshow(image);
         pickAnother = false;
     else
         xset = [xset; x];
@@ -44,7 +46,7 @@ end
 X = X(and(in,~on));
 Y = Y(and(in,~on));
 
-Linds = sub2ind([nrowsI ncolsI],Y,X);
+Linds = sub2ind([nrowsMat ncolsMat],Y,X);
 
 BW(Linds) = true;
 IDs = setdiff(unique(id_mat(BW)),0);
