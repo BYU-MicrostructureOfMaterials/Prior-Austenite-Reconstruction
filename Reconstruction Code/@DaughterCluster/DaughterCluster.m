@@ -60,6 +60,8 @@ classdef DaughterCluster < handle
         
         fill_cluster(obj,gIDmat)
         
+        recalc_PA_orientation(obj,nRuns)
+        
         function setClusterID(obj,idval)
             obj.ID = idval;
         end

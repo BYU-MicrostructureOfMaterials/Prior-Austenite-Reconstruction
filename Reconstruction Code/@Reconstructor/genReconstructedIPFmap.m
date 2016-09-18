@@ -20,7 +20,7 @@ function genReconstructedIPFmap(obj,filledtype)
         end
 
         reconstructedIPFmap.add_data(Omap);
-        disp([i length(obj.clusters)]);
+
     end
 
     obj.reconstructedIPFmap = reconstructedIPFmap;

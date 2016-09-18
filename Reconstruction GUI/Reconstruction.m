@@ -492,35 +492,35 @@ inclNonMembers = handles.toggle_included_non_member_grains.Value;
 
 h = figure;
 
-if inclGrains
+if inclGrains && ~isempty(handles.selecteddata.selectedGrains)
     grainsToPlot = handles.selecteddata.selectedGrains;
     grainOrientations = [grainsToPlot.orientation];
     grainQuats = [grainOrientations.quat];
     pole_figure_by_quat(grainQuats','b*',5,h.Number);
 end
 
-if inclPosParents
+if inclPosParents && ~isempty(handles.selecteddata.selectedGrains)
     grains = handles.selecteddata.selectedGrains;
     grainPosParentOrientations = [grains.newPhaseOrientations];
     posParentQuats = [grainPosParentOrientations.quat];
     pole_figure_by_quat(posParentQuats','bd',3,h.Number);
 end
 
-if inclClusters
+if inclClusters && ~isempty(handles.selecteddata.selectedClusters)
     clusters = handles.selecteddata.selectedClusters;
     clusterOrientations = [clusters.clusterOCenter];
     clusterQuats = [clusterOrientations.quat];
     pole_figure_by_quat(clusterQuats','r*',5,h.Number);
 end
 
-if inclPosDaughters
+if inclPosDaughters && ~isempty(handles.selecteddata.selectedClusters)
     clusters = handles.selecteddata.selectedClusters;
     posDaughterOrientations = [clusters.theoreticalVariants];
     posDaughterQuats = [posDaughterOrientations.quat];
     pole_figure_by_quat(posDaughterQuats','rd',3,h.Number);
 end
 
-if inclDaughters
+if inclDaughters && ~isempty(handles.selecteddata.selectedClusters)
     clusters = handles.selecteddata.selectedClusters;
     members = [clusters.memberGrains];
     daughterOrientations = [members.orientation];
@@ -528,7 +528,7 @@ if inclDaughters
     pole_figure_by_quat(daughterQuats','k.',1,h.Number);
 end
 
-if inclNonMembers
+if inclNonMembers && ~isempty(handles.selecteddata.selectedClusters)
     clusters = handles.selecteddata.selectedClusters;
     inclNonMembers = [clusters.includedNonMemberGrains];
     inclNonMemberOrientations = [inclNonMembers.orientation];
@@ -552,6 +552,48 @@ function ReassignDaughterRegion_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+R = handles.reconstructor;
+
+%Select daughter region to be reassigned
+disp('Select daughter region to be reassigned');
+[BW, IDs] = SelectedData.poly_select_IPF_data(handles.OriginalIPFMap,R,'daughterGrains');
+
+%Select target reassignment cluster
+disp('Select target reassignment cluster');
+clusterID = SelectedData.point_select_IPF_data(handles.ReconstructedIPFMap,R,'PA');
+if length(clusterID)>1, error('More than one target cluster chosen'); end
+targetCluster = R.clusters([R.clusters.ID]==clusterID);
+BW = and(BW,~targetCluster.scanLocations);
+grainIDs = setdiff(unique(R.grainmap.gIDmat(BW)),0);
+grainsToMove = R.grainmap.grains(ismember([R.grainmap.grains.OIMgid],grainIDs));
+
+%Find all clusters daughter region may belong to, and remove those grains
+%from those clusters
+priorClusterIDs = setdiff(unique(R.clusterIDmat(BW)),[0 targetCluster.ID]);
+if ~isempty(priorClusterIDs)
+    for i=1:length(priorClusterIDs)
+        currClust = R.clusters([R.clusters.ID]==priorClusterIDs(i));
+        %Remove from member grains
+        toRemove = ismember([currClust.memberGrains.OIMgid],grainIDs);
+        currClust.memberGrains = currclust.memberGrains(~toRemove);
+        currClust.parentPhaseOrientations = currClust.parentPhaseOrientations(:,~toRemove);
+        %Remove from included non-member grains
+        toRemove = ismember([currClust.includedNonMemberGrains.OIMgid],grainIDs);
+        currClust.includedNonMemberGrains = currClust.includedNonMemberGrains(~toRemove);
+    end
+end
+
+%Add grains to new cluster, recalculate cluster orientation
+targetCluster.includedNonMemberGrains = [targetCluster.includedNonMemberGrains grainsToMove];
+targetCluster.calc_metadata(R.grainmap.gIDmat,'filled',true);
+
+%Re-form clusterIDmat and plot new reconstructedIPF map
+R.gen_cluster_IDmat;
+R.genReconstructedIPFmap('filled');
+axes(handles.ReconstructedIPFMap);
+imshow(R.reconstructedIPFmap.IPFimage);
+
+
 
 % --- Executes on button press in ReassignPARegion.
 function ReassignPARegion_Callback(hObject, eventdata, handles)
@@ -559,17 +601,23 @@ function ReassignPARegion_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+%Select cluster to be merged
+disp('Select cluster to be merged');
+
+%Select target cluster
+disp('Select target cluster');
+
+%Add grains from merged cluster to target cluster
+
+%Recalculate PA orientation for target cluster
+    %Run calc_metadata (not just update positions)
+
+%Update target cluster, cluster ID matrix, IPF map
+
 
 % --- Executes on button press in RedivideClusterOverlap.
 function RedivideClusterOverlap_Callback(hObject, eventdata, handles)
 % hObject    handle to RedivideClusterOverlap (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-
-% --- Executes on button press in RecalculatePAOrientation.
-function RecalculatePAOrientation_Callback(hObject, eventdata, handles)
-% hObject    handle to RecalculatePAOrientation (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
