@@ -594,27 +594,6 @@ axes(handles.ReconstructedIPFMap);
 imshow(R.reconstructedIPFmap.IPFimage);
 
 
-
-% --- Executes on button press in ReassignPARegion.
-function ReassignPARegion_Callback(hObject, eventdata, handles)
-% hObject    handle to ReassignPARegion (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-%Select cluster to be merged
-disp('Select cluster to be merged');
-
-%Select target cluster
-disp('Select target cluster');
-
-%Add grains from merged cluster to target cluster
-
-%Recalculate PA orientation for target cluster
-    %Run calc_metadata (not just update positions)
-
-%Update target cluster, cluster ID matrix, IPF map
-
-
 % --- Executes on button press in RedivideClusterOverlap.
 function RedivideClusterOverlap_Callback(hObject, eventdata, handles)
 % hObject    handle to RedivideClusterOverlap (see GCBO)
@@ -634,6 +613,12 @@ function FillUnallocatedbyCluster_Callback(hObject, eventdata, handles)
 % hObject    handle to FillUnallocatedbyCluster (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+handles.reconstructor.fill_unalloc_regions_by_expansion(10);
+handles.reconstructor.gen_cluster_IDmat;
+handles.reconstructor.genReconstructedIPFmap('filled');
+axes(handles.ReconstructedIPFMap);
+imshow(handles.reconstructor.reconstructedIPFmap.IPFimage);
 
 
 % --- Executes on button press in WriteAngFile.

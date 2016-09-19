@@ -17,6 +17,7 @@ BW = false(nrowsMat,ncolsMat);
 X = X(:);
 Y = Y(:);
 
+axes(I);
 hold on;
 
 xset = [];

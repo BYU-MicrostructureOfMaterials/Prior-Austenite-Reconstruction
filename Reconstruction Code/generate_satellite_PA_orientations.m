@@ -1,9 +1,9 @@
-load q_NW_OR_gamma_to_alpha;
-load q_NW_OR_alpha_to_gamma;
+load q_KS_OR_gamma_to_alpha;
+load q_KS_OR_alpha_to_gamma;
+load quat_cubic_symops;
 
-GtoA = q_NW_OR_gamma_to_alpha;
-AtoG = q_NW_OR_alpha_to_gamma;
-
+GtoA = q_KS_OR_gamma_to_alpha;
+AtoG = q_KS_OR_alpha_to_gamma;
 
 % startQ = currClust.clusterOCenter.quat;
 
@@ -26,14 +26,16 @@ end
 %%
 
 orientations = [];
-searchQ = Q;
+var = 4;
+% hold = Q(:,[1:24 (24*(var-1))+1:var*24]);
+searchQ = Q;%hold;
 while ~isempty(searchQ)
    
     misos = real(q_min_distfun(searchQ(:,1)',searchQ','cubic'));
     inWindow = misos<(.0001*pi/180);
     overlappingQ = searchQ(:,inWindow);
     
-    if sum(inWindow)>1
+    if sum(inWindow)== 6
         orientations = [orientations overlappingQ(:,1)];
     end
     
@@ -41,4 +43,5 @@ while ~isempty(searchQ)
     
 end
 
-pole_figure_by_quat(orientations',[],[],'bd',3,1);
+pole_figure_by_quat(orientations','rd',3,1);
+title('<001>');
