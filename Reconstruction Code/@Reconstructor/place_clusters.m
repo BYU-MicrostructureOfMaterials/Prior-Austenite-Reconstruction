@@ -3,22 +3,29 @@ function place_clusters(obj,clusters)
 if nargin==1 %First placement of clusters, start from blank clusterIDmat
     clusterArray = obj.clusters;
     clusterIDmat = int32(zeros(size(obj.grainmap.gIDmat)));
+    
+    %Initialize cluster containers for sorting
+    placedClusters = DaughterCluster.empty;
+    filteredClusters = DaughterCluster.empty;
+    alternateOrientationClusters = DaughterCluster.empty;
+    
 elseif nargin==2 %Adding clusters to IPFmap, start from current clusterIDmat
     clusterArray = clusters;
     clusterIDmat = obj.clusterIDmat;
+    
+    %Take cluster containers from reconstructor object
+    placedClusters = obj.clusters;
+    filteredClusters = obj.filteredClusters;
+    alternateOrientationClusters = obj.alternateOrientationClusters;
 end
 
 disp('Filling clusters');
 
 %Fill all placed clusters then handle overlap
-for currClust=obj.clusters
+for currClust=clusterArray
     currClust.fill_cluster(obj.grainmap);
 end
 
-%Initialize cluster containers for sorting
-placedClusters = DaughterCluster.empty;
-filteredClusters = DaughterCluster.empty;
-alternateOrientationClusters = DaughterCluster.empty;
 
 ambiguities = [];
 for currClust=clusterArray
@@ -113,8 +120,8 @@ obj.clusters = placedClusters;
 obj.filteredClusters = filteredClusters;
 obj.alternateOrientationClusters = alternateOrientationClusters;
 
-disp(['Number of ambiguities: ',num2str(length(ambiguities(:,1)))]);
 if ~isempty(ambiguities)
+    disp(['Number of ambiguities: ',num2str(length(ambiguities(:,1)))]);
     for i=1:length(ambiguities(:,1))
 
         clusterA = obj.clusters([obj.clusters.ID]==ambiguities(i,1));

@@ -22,7 +22,7 @@ function varargout = Reconstruction(varargin)
 
 % Edit the above text to modify the response to help Reconstruction
 
-% Last Modified by GUIDE v2.5 17-Sep-2016 17:28:56
+% Last Modified by GUIDE v2.5 19-Sep-2016 20:20:49
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -600,12 +600,99 @@ function RedivideClusterOverlap_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+%Select first cluster
+disp('Select 2 clusters forming boundary to fix');
+clusterIDs = SelectedData.point_select_IPF_data(handles.ReconstructedIPFMap,handles.reconstructor,'PA');
+if length(clusterIDs)~=2, error('Incorrect number of target cluster chosen'); end
+clusterA = handles.reconstructor.clusters([handles.reconstructor.clusters.ID]==clusterIDs(1));
+clusterB = handles.reconstructor.clusters([handles.reconstructor.clusters.ID]==clusterIDs(2));
+
+allAGrainIDs = [[clusterA.memberGrains.OIMgid] [clusterA.includedNonMemberGrains.OIMgid] [clusterA.inactiveGrains.OIMgid]];
+allBGrainIDs = [[clusterB.memberGrains.OIMgid] [clusterB.includedNonMemberGrains.OIMgid] [clusterB.inactiveGrains.OIMgid]];
+commonGrainIDs = intersect(allAGrainIDs,allBGrainIDs);
+commonGrains = handles.reconstructor.grainmap.grains(ismember([handles.reconstructor.grainmap.grains.OIMgid],commonGrainIDs));
+
+
+%Add all member/included nonmember grains
+clusterAquat = clusterA.clusterOCenter.quat;
+clusterBquat = clusterB.clusterOCenter.quat;
+for currGrain=commonGrains
+    
+    posParentsO = [currGrain.newPhaseOrientations];
+    
+    if ~isempty(posParentsO)
+        posParentsQ = [posParentsO.quat];
+
+        AParentMisos = q_min_distfun(clusterAquat',posParentsQ','cubic');
+        [minAMiso, AInd] = min(AParentMisos);
+        BParentMisos = q_min_distfun(clusterBquat',posParentsQ','cubic');
+        [minBMiso, BInd] = min(BParentMisos);
+        
+    else
+        AParentMisos = [];
+        BParentMisos = [];
+    end
+    
+    %Allocate grain to proper spot in cluster A
+    if ~isempty(AParentMisos) && sum(AParentMisos<clusterA.misoTolerance)==1
+        %Add to cluster A's member grain list, along with it's PA orientation
+        clusterA.memberGrains = [clusterA.memberGrains currGrain];
+        clusterA.parentPhaseOrientations = [clusterA.parentPhaseOrientations posParentsO(AInd)];
+    else
+        %Add to clusterA's included non-member list
+        clusterA.includedNonMemberGrains = [clusterA.includedNonMemberGrains currGrain];
+    end
+    
+    %Allocate grain to proper spot in cluster B
+    if ~isempty(BParentMisos) && sum(BParentMisos<clusterB.misoTolerance)==1
+        %Add to cluster B's member grain list, along with it's PA orientation
+        clusterB.memberGrains = [clusterB.memberGrains currGrain];
+        clusterB.parentPhaseOrientations = [clusterB.parentPhaseOrientations posParentsO(BInd)];
+    else
+        %Add to clusterB's included non-member list
+        clusterB.includedNonMemberGrains = [clusterB.includedNonMemberGrains currGrain];
+    end
+    
+end
+
+clusterA.calc_metadata(handles.reconstructor.grainmap.gIDmat,'filled');
+clusterB.calc_metadata(handles.reconstructor.grainmap.gIDmat,'filled');
+
+handles.reconstructor.numTemps = str2num(handles.NumTemps.String);
+handles.reconstructor.numTrials = str2num(handles.NumTrials.String);
+handles.reconstructor.startAcceptP = str2double(handles.StartAcceptP.String);
+handles.reconstructor.endAcceptP = str2double(handles.EndAcceptP.String);
+
+handles.reconstructor.divide_AR_by_SA(clusterA,clusterB);
+
+handles.reconstructor.genReconstructedIPFmap('filled');
+
+axes(handles.ReconstructedIPFMap);
+imshow(handles.reconstructor.reconstructedIPFmap.IPFimage);
+
 
 % --- Executes on button press in ExpandNeighbor.
 function ExpandNeighbor_Callback(hObject, eventdata, handles)
 % hObject    handle to ExpandNeighbor (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+%choose cluster and expand
+disp('Select target cluster');
+clusterID = SelectedData.point_select_IPF_data(handles.ReconstructedIPFMap,handles.reconstructor,'PA');
+if length(clusterID)>1, error('More than one target cluster chosen'); end
+currClust = handles.reconstructor.clusters([handles.reconstructor.clusters.ID]==clusterID);
+currClust.expand_cluster_by_NN(handles.reconstructor);
+
+%Handle any overlap with other clusters
+handles.reconstructor.place_clusters(currClust);
+
+currClust.calc_metadata(handles.reconstructor.grainmap.gIDmat,'filled',true);
+handles.reconstructor.genReconstructedIPFmap('filled');
+
+axes(handles.ReconstructedIPFMap);
+imshow(handles.reconstructor.reconstructedIPFmap.IPFimage);
+
 
 
 % --- Executes on button press in FillUnallocatedbyCluster.
@@ -705,3 +792,10 @@ R = handles.reconstructor;
 clusters = R.clusters(ismember([R.clusters.ID],IDs));
 selectedData.add_data(clusters);
 
+
+
+% --- Executes during object creation, after setting all properties.
+function ExpandNeighbor_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to ExpandNeighbor (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
