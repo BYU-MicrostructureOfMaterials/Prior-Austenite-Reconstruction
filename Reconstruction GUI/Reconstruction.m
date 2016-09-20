@@ -22,7 +22,7 @@ function varargout = Reconstruction(varargin)
 
 % Edit the above text to modify the response to help Reconstruction
 
-% Last Modified by GUIDE v2.5 19-Sep-2016 20:20:49
+% Last Modified by GUIDE v2.5 20-Sep-2016 08:17:22
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -81,6 +81,14 @@ imshow(handles.grainmap.grainIPFmap.IPFimage);
 imagesc(handles.grainmap.grainIPFmap.IPFimage)
 
 imshow(handles.grainmap.grainIPFmap.IPFimage);
+
+handles.grainIPF_overlay.String = {'None', 'Grain IQ', 'Grain CI', 'Reoncstruction CI'};
+handles.grainIPF_overlay.Value = 1;
+
+handles.ReconstructedIPFMap.Visible = 'off';
+handles.ReconstructedIPF_overlay.String = {'None', 'Grain IQ', 'Grain CI', 'Reoncstruction CI'};
+handles.ReconstructedIPF_overlay.Value = 1;
+
 
 handles.DataPanel.Visible = 'off';
 handles.DataPanelBlank.Visible = 'on';
@@ -713,6 +721,8 @@ function WriteAngFile_Callback(hObject, eventdata, handles)
 % hObject    handle to WriteAngFile (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+disp('here');
+
 
 
 % --- Executes on button press in toggle_cluster_orientations.
@@ -799,3 +809,99 @@ function ExpandNeighbor_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to ExpandNeighbor (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
+
+
+% --- Executes on selection change in grainIPF_overlay.
+function grainIPF_overlay_Callback(hObject, eventdata, handles)
+% hObject    handle to grainIPF_overlay (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns grainIPF_overlay contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from grainIPF_overlay
+
+overlayType = handles.grainIPF_overlay.String{handles.grainIPF_overlay.Value};
+switch overlayType
+    
+    case 'None'
+        axes(handles.OriginalIPFMap);
+        imshow(handles.grainmap.grainIPFmap.IPFimage);
+    case 'Grain IQ'
+        overlayedIPF = IPFmap.superimposedIPF(handles.grainmap.grainIPFmap.IPFimage,handles.grainmap.IQmat);
+        axes(handles.OriginalIPFMap);
+        imshow(overlayedIPF);
+    case 'Grain CI'
+        overlayedIPF = IPFmap.superimposedIPF(handles.grainmap.grainIPFmap.IPFimage,handles.grainmap.CImat);
+        axes(handles.OriginalIPFMap);
+        imshow(overlayedIPF);
+    case 'Reconstruction CI'
+        if ~strcmp(handles.ReconstructedIPFMap.Visible,'off')
+            handles.reconstructor.gen_reconstructed_confidence_mat;
+            overlayedIPF = IPFmap.superimposedIPF(handles.grainmap.grainIPFmap.IPFimage,handles.reconstructor.reconstructedConfidenceMat);
+            axes(handles.OriginalIPFMap);
+            imshow(overlayedIPF);
+        end
+end
+
+
+
+% --- Executes during object creation, after setting all properties.
+function grainIPF_overlay_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to grainIPF_overlay (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on selection change in ReconstructedIPF_overlay.
+function ReconstructedIPF_overlay_Callback(hObject, eventdata, handles)
+% hObject    handle to ReconstructedIPF_overlay (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns ReconstructedIPF_overlay contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from ReconstructedIPF_overlay
+% if ~strcmp(handles.ReconstructedIPFMap.Visible,'off')
+    
+    overlayType = handles.ReconstructedIPF_overlay.String{handles.ReconstructedIPF_overlay.Value};
+    switch overlayType
+
+        case 'None'
+            axes(handles.ReconstructedIPFMap);
+            imshow(handles.reconstructor.reconstructedIPFmap.IPFimage);
+        case 'Grain IQ'
+            overlayedIPF = IPFmap.superimposedIPF(handles.reconstructor.reconstructedIPFmap.IPFimage,handles.grainmap.IQmat);
+            axes(handles.ReconstructedIPFMap);
+            imshow(overlayedIPF);
+        case 'Grain CI'
+            overlayedIPF = IPFmap.superimposedIPF(handles.reconstructor.reconstructedIPFmap.IPFimage,handles.grainmap.CImat);
+            axes(handles.ReconstructedIPFMap);
+            imshow(overlayedIPF);
+        case 'Reconstruction CI'
+            if ~strcmp(handles.ReconstructedIPFMap.Visible,'off')
+                handles.reconstructor.gen_reconstructed_confidence_mat;
+                overlayedIPF = IPFmap.superimposedIPF(handles.reconstructor.reconstructedIPFmap.IPFimage,handles.reconstructor.reconstructedConfidenceMat);
+                axes(handles.ReconstructedIPFMap);
+                imshow(overlayedIPF);
+            end
+    end
+    
+% end
+
+
+% --- Executes during object creation, after setting all properties.
+function ReconstructedIPF_overlay_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to ReconstructedIPF_overlay (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
