@@ -41,7 +41,7 @@ while ~isempty(Linds)
     
 end
 
-IDs = IDs(2:nPadRows-1,2:nPadCols-1);
+IDs = int32(IDs(2:nPadRows-1,2:nPadCols-1));
 
 end
 

@@ -583,7 +583,7 @@ if ~isempty(priorClusterIDs)
         currClust = R.clusters([R.clusters.ID]==priorClusterIDs(i));
         %Remove from member grains
         toRemove = ismember([currClust.memberGrains.OIMgid],grainIDs);
-        currClust.memberGrains = currclust.memberGrains(~toRemove);
+        currClust.memberGrains = currClust.memberGrains(~toRemove);
         currClust.parentPhaseOrientations = currClust.parentPhaseOrientations(:,~toRemove);
         %Remove from included non-member grains
         toRemove = ismember([currClust.includedNonMemberGrains.OIMgid],grainIDs);
