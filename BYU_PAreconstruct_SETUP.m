@@ -2,8 +2,8 @@ function BYU_PAreconstruct_SETUP
 
     %Move files into new folder
     [pathstr,currFolder,~] = fileparts(cd);
-    movefile(['../',currFolder],'../BYU_PAreconstruct_v_2016_10_3');
-    cd '../BYU_PAreconstruct_v_2016_10_3';
+    movefile(['../',currFolder],'../BYU_PAreconstruct_v_2016_10_3.5');
+    cd '../BYU_PAreconstruct_v_2016_10_3.5';
     rmdir(['../',currFolder]);
     
     %Check if a past version of "BYU_PAreconstruct.m" is in the path
