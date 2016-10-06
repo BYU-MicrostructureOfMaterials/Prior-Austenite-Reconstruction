@@ -109,6 +109,9 @@ classdef Reconstructor < handle
         
         gen_reconstructed_confidence_mat(obj);
         
+        %Generate ANG file
+        gen_ang_file(obj)
+        
     end
     
 end

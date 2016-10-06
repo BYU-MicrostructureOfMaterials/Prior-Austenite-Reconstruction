@@ -3,7 +3,10 @@ function gen_IDmats(obj)
     [ncols,nrows] = obj.pixel_loc(obj.maxx,obj.maxy,obj.minx,obj.miny,obj.stepsize);
     grmat = zeros(nrows,ncols);
     pmat = zeros(nrows,ncols);
-
+    xScanLocs = zeros(nrows,ncols);
+    yScanLocs = zeros(nrows,ncols);
+    fitmat = zeros(nrows,ncols);
+    
     gIDs = [obj.grains.OIMgid];
     pIDs = [obj.grains.phaseID];
 
@@ -12,10 +15,14 @@ function gen_IDmats(obj)
         currgrain = obj.grains(gIDs==gIDs(i));
         X = currgrain.scanpoints.x;
         Y = currgrain.scanpoints.y;
+        fit = currgrain.scanpoints.fit;
 
         [pixelcols,pixelrows] = obj.pixel_loc(X,Y,obj.minx,obj.miny,obj.stepsize);
 
         for j=1:length(pixelcols)
+            fitmat(pixelrows(j),pixelcols(j)) = fit(j);
+            xScanLocs(pixelrows(j),pixelcols(j)) = X(j);
+            yScanLocs(pixelrows(j),pixelcols(j)) = Y(j);
             grmat(pixelrows(j),pixelcols(j)) = gIDs(i);
             pmat(pixelrows(j),pixelcols(j)) = pIDs(i);
         end
@@ -66,6 +73,9 @@ function gen_IDmats(obj)
     
     obj.gIDmat = grmat;
     obj.phaseIDmat = int32(pmat);
+    obj.xScanLocs = xScanLocs;
+    obj.yScanLocs = yScanLocs;
+    obj.FITmat = fitmat;
     obj.datalocked = true;
 
 end

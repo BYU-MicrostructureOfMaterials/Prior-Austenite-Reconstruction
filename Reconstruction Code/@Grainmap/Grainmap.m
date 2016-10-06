@@ -6,6 +6,10 @@ classdef Grainmap < handle
         scandata
         grains
         
+        xScanLocs
+        yScanLocs
+        FITmat
+        
         gIDmat@int32
         phaseIDmat@int32
         IQmat

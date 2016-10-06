@@ -721,7 +721,7 @@ function WriteAngFile_Callback(hObject, eventdata, handles)
 % hObject    handle to WriteAngFile (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-disp('here');
+handles.reconstructor.gen_ang_file;
 
 
 

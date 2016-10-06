@@ -1,0 +1,99 @@
+# x-star                    0.508100
+# y-star                    0.580200
+# z-star                    0.661200
+# WorkingDistance           15.000000
+#
+# InterplanarTolerance      3.000000
+# SEMVoltage                20.000000
+# PhaseDiffFactor_Votes     6
+# PhaseDiffFactor_Fit       0
+# PhaseDiffFactor_CI        0
+# PhaseDiffFactor_BandWidth 0
+# CI_CalcMethod             0
+# Use Band Widths           0
+#
+# MaterialName  	Austenite
+# Formula     	Fe
+# Info		
+# Symmetry              43
+# LatticeConstants      3.650 3.650 3.650  90.000  90.000  90.000
+# NumberFamilies        69
+# hklFamilies   	 1 -1 -1 1 12.289907 1
+# hklFamilies   	 0 -2  0 1 10.759452 1
+# hklFamilies   	 0 -2  2 1 7.540446 1
+# hklFamilies   	 1 -3 -1 1 6.263220 1
+# hklFamilies   	 2 -2 -2 0 5.935450 0
+# hklFamilies   	 0 -4  0 0 4.915288 0
+# hklFamilies   	 1 -3 -3 0 4.352838 0
+# hklFamilies   	 0 -4  2 0 4.197826 0
+# hklFamilies   	 2 -4 -2 0 3.658818 0
+# hklFamilies   	 1 -5 -1 0 3.336692 0
+# hklFamilies   	 3 -3 -3 0 3.336692 0
+# hklFamilies   	 0 -4  4 0 2.912595 0
+# hklFamilies   	 1 -5 -3 0 2.691891 0
+# hklFamilies   	 2 -4 -4 0 2.634411 0
+# hklFamilies   	 0 -6  0 0 2.634411 0
+# hklFamilies   	 0 -6  2 0 2.412113 0
+# hklFamilies   	 3 -5 -3 0 2.252604 0
+# hklFamilies   	 2 -6 -2 0 2.211076 0
+# hklFamilies   	 4 -4 -4 0 2.057538 0
+# hklFamilies   	 1 -5 -5 0 1.946544 0
+# hklFamilies   	 1 -7 -1 0 1.946544 0
+# hklFamilies   	 0 -6  4 0 1.910275 0
+# hklFamilies   	 2 -6 -4 0 1.790674 0
+# hklFamilies   	 1 -7 -3 0 1.711542 0
+# hklFamilies   	 3 -5 -5 0 1.711542 0
+# hklFamilies   	 0 -8  0 0 1.584000 0
+# hklFamilies   	 3 -7 -3 0 1.523479 0
+# hklFamilies   	 0 -8  2 0 1.504471 0
+# hklFamilies   	 4 -6 -4 0 1.504471 0
+# hklFamilies   	 0 -6  6 0 1.429803 0
+# hklFamilies   	 2 -8 -2 0 1.429803 0
+# hklFamilies   	 5 -5 -5 0 1.375154 0
+# hklFamilies   	 1 -7 -5 0 1.375154 0
+# hklFamilies   	 2 -6 -6 0 1.357181 0
+# hklFamilies   	 0 -8  4 0 1.298563 0
+# hklFamilies   	 1 -9 -1 0 1.257592 0
+# hklFamilies   	 3 -7 -5 0 1.257592 0
+# hklFamilies   	 2 -8 -4 0 1.244100 0
+# hklFamilies   	 4 -6 -6 0 1.190918 0
+# hklFamilies   	 1 -9 -3 0 1.154257 0
+# hklFamilies   	 4 -8 -4 0 1.103252 0
+# hklFamilies   	 3 -9 -3 0 1.073285 0
+# hklFamilies   	 1 -7 -7 0 1.073285 0
+# hklFamilies   	 5 -7 -5 0 1.073285 0
+# hklFamilies   	 0 -8  6 0 1.063397 0
+# hklFamilies   	 2 -8 -6 0 1.024332 0
+# hklFamilies   	 3 -7 -7 0 1.000283 0
+# hklFamilies   	 1 -9 -5 0 1.000283 0
+# hklFamilies   	 6 -6 -6 0 0.992620 0
+# hklFamilies   	 3 -9 -5 0 0.939943 0
+# hklFamilies   	 4 -8 -6 0 0.932550 0
+# hklFamilies   	 5 -7 -7 0 0.885519 0
+# hklFamilies   	 0 -8  8 0 0.856170 0
+# hklFamilies   	 5 -9 -5 0 0.838835 0
+# hklFamilies   	 1 -9 -7 0 0.838835 0
+# hklFamilies   	 2 -8 -8 0 0.833102 0
+# hklFamilies   	 6 -8 -6 0 0.810380 0
+# hklFamilies   	 3 -9 -7 0 0.795363 0
+# hklFamilies   	 4 -8 -8 0 0.771178 0
+# hklFamilies   	 7 -7 -7 0 0.756869 0
+# hklFamilies   	 5 -9 -7 0 0.720502 0
+# hklFamilies   	 1 -9 -9 0 0.692689 0
+# hklFamilies   	 6 -8 -8 0 0.689260 0
+# hklFamilies   	 3 -9 -9 0 0.665550 0
+# hklFamilies   	 7 -9 -7 0 0.639039 0
+# hklFamilies   	 5 -9 -9 0 0.613114 0
+# hklFamilies   	 8 -8 -8 0 0.597192 0
+# hklFamilies   	 7 -9 -9 0 0.549283 0
+# hklFamilies   	 9 -9 -9 0 0.473589 0
+# ElasticConstants 	-1.000000 -1.000000 -1.000000 -1.000000 -1.000000 -1.000000
+# ElasticConstants 	-1.000000 -1.000000 -1.000000 -1.000000 -1.000000 -1.000000
+# ElasticConstants 	-1.000000 -1.000000 -1.000000 -1.000000 -1.000000 -1.000000
+# ElasticConstants 	-1.000000 -1.000000 -1.000000 -1.000000 -1.000000 -1.000000
+# ElasticConstants 	-1.000000 -1.000000 -1.000000 -1.000000 -1.000000 -1.000000
+# ElasticConstants 	-1.000000 -1.000000 -1.000000 -1.000000 -1.000000 -1.000000
+#
+# GRID: SqrGrid
+#
+# OPERATOR: hrsem
