@@ -499,12 +499,14 @@ inclDaughters = handles.toggle_daughter_orientations.Value;
 inclNonMembers = handles.toggle_included_non_member_grains.Value;
 
 h = figure;
+h2 = figure;
 
 if inclGrains && ~isempty(handles.selecteddata.selectedGrains)
     grainsToPlot = handles.selecteddata.selectedGrains;
     grainOrientations = [grainsToPlot.orientation];
     grainQuats = [grainOrientations.quat];
     pole_figure_by_quat(grainQuats','b*',5,h.Number);
+    plot_RF_FZc([],grainQuats,'b*',5,h2.Number);
 end
 
 if inclPosParents && ~isempty(handles.selecteddata.selectedGrains)
@@ -512,6 +514,7 @@ if inclPosParents && ~isempty(handles.selecteddata.selectedGrains)
     grainPosParentOrientations = [grains.newPhaseOrientations];
     posParentQuats = [grainPosParentOrientations.quat];
     pole_figure_by_quat(posParentQuats','bd',3,h.Number);
+    plot_RF_FZc([],posParentQuats,'bd',3,h2.Number);
 end
 
 if inclClusters && ~isempty(handles.selecteddata.selectedClusters)
@@ -519,6 +522,7 @@ if inclClusters && ~isempty(handles.selecteddata.selectedClusters)
     clusterOrientations = [clusters.clusterOCenter];
     clusterQuats = [clusterOrientations.quat];
     pole_figure_by_quat(clusterQuats','r*',5,h.Number);
+    plot_RF_FZc([],clusterQuats,'r*',5,h2.Number);
 end
 
 if inclPosDaughters && ~isempty(handles.selecteddata.selectedClusters)
@@ -526,6 +530,7 @@ if inclPosDaughters && ~isempty(handles.selecteddata.selectedClusters)
     posDaughterOrientations = [clusters.theoreticalVariants];
     posDaughterQuats = [posDaughterOrientations.quat];
     pole_figure_by_quat(posDaughterQuats','rd',3,h.Number);
+    plot_RF_FZc([],posDaughterQuats,'rd',3,h2.Number);
 end
 
 if inclDaughters && ~isempty(handles.selecteddata.selectedClusters)
@@ -534,6 +539,7 @@ if inclDaughters && ~isempty(handles.selecteddata.selectedClusters)
     daughterOrientations = [members.orientation];
     daughterQuats = [daughterOrientations.quat];
     pole_figure_by_quat(daughterQuats','k.',1,h.Number);
+    plot_RF_FZc([],daughterQuats,'k.',1,h2.Number);
 end
 
 if inclNonMembers && ~isempty(handles.selecteddata.selectedClusters)
@@ -542,6 +548,7 @@ if inclNonMembers && ~isempty(handles.selecteddata.selectedClusters)
     inclNonMemberOrientations = [inclNonMembers.orientation];
     inclNonMemberQuats = [inclNonMemberOrientations.quat];
     pole_figure_by_quat(inclNonMemberQuats','k.',1,h.Number);
+    plot_RF_FZc([],inclNonMemberQuats,'k.',1,h2.Number);
 end
 
 

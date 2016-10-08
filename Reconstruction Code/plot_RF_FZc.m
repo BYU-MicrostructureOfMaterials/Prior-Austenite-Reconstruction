@@ -129,7 +129,6 @@ plot3([p1(1) p2(1)],[p1(2) p2(2)],[p1(3) p2(3)],'b');
 if isempty(R) && ~isempty(q)
     load quat_cubic_symops;
     R = quat2fundRF(q,quat_cubic_symops);
-%     R = quat2RF(q);
 end
 
 X = R(1,:);
