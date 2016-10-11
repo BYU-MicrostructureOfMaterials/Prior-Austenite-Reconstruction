@@ -1,6 +1,6 @@
 function BYU_PAreconstruct
 
-disp('here, version 3.5');
+disp('Running BYU PA Reonstruction Tool version 2016_10_11');
 %Run GUI
 Initial;
 
