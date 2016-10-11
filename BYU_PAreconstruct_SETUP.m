@@ -19,7 +19,7 @@ function BYU_PAreconstruct_SETUP
     end
     
     %Add current folder to path variable
-    addpath(cd);
+    addpath(genpath(cd));
     savepath;
     
 
