@@ -1,5 +1,7 @@
 function BYU_PAreconstruct_SETUP
 
+    %Hi Brett
+
     %Move files into new folder
     [pathstr,currFolder,~] = fileparts(cd);
     movefile(['../',currFolder],'../BYU_PAreconstruct_v_2016_10_11');
