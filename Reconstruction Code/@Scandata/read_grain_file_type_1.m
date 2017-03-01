@@ -29,8 +29,31 @@ while inheader
 end
 
 %Check for square grid format
-issquare = any(strfind(header{1},'Square Grid'));
-if ~issquare, error('Input grain file must be of square scan. Convert to square scan first.'); end
+%Read in file data
+filedata = ReadGrainFile(filename);
+
+Xcoordinates = filedata{4};
+Ycoordinates = filedata{5};
+
+%%Use a while to find the next row and compare the initial x values of
+%%row 1 and 2 to see if it is a Hex or Square Scan
+
+difference=0;
+rowcount = 1;
+
+while (difference==0)
+    
+    difference = Ycoordinates(1,1) - Ycoordinates(rowcount,1);
+    rowcount = rowcount + 1;
+   
+end
+
+% remove the extra 1 added on by the last iteration of the while love
+
+rowcount = rowcount - 1;
+
+issquare = Xcoordinates(1,1)-Xcoordinates((rowcount),1);
+if issquare ~= 0, error('Input grain file must be of square scan. Convert to square scan first.'); end
 
 %Check column data format. Must have following lines:
 format{1} = '# Column 1-3: phi1, PHI, phi2 (orientation of point in radians)';
