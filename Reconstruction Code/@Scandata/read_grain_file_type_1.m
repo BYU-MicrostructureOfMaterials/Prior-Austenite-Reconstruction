@@ -32,28 +32,47 @@ end
 %Read in file data
 filedata = ReadGrainFile(filename);
 
-Xcoordinates = filedata{4};
-Ycoordinates = filedata{5};
+Xpos = filedata{4};
+Ypos = filedata{5};
 
-%%Use a while to find the next row and compare the initial x values of
-%%row 1 and 2 to see if it is a Hex or Square Scan
+%%Use a while loop to find the next row and compare the initial x values of
+%%the first 4 rows to see if it is a Hex or Square Scan
 
-difference=0;
+test1=0;
 rowcount = 1;
-
-while (difference==0)
-    
-    difference = Ycoordinates(1,1) - Ycoordinates(rowcount,1);
+while (test1==0)
     rowcount = rowcount + 1;
-   
+    test1 = Ypos(1,1) - Ypos(rowcount,1);
+    
 end
 
-% remove the extra 1 added on by the last iteration of the while love
+rowcount = rowcount;
 
-rowcount = rowcount - 1;
+test2=0;
+rowcount2 = rowcount;
 
-issquare = Xcoordinates(1,1)-Xcoordinates((rowcount),1);
-if issquare ~= 0, error('Input grain file must be of square scan. Convert to square scan first.'); end
+while (test2==0)
+    rowcount2 = rowcount2 + 1;
+    test2 = Ypos(rowcount,1) - Ypos(rowcount2,1);
+    
+end
+
+test3=0;
+rowcount3 = rowcount2;
+
+while (test3==0)
+    rowcount3 = rowcount3 + 1;
+    test3 = Ypos(rowcount2,1) - Ypos(rowcount3,1);
+    
+end
+
+%Minus the first 4 values of the of each row in the scan (what if just one
+%scan point is missing?)
+
+issquare = Xpos(1,1)-Xpos((rowcount),1)-Xpos((rowcount2),1)-Xpos((rowcount3),1);
+
+if issquare ~= 0 
+    error('Input grain file must be of square scan. Convert to square scan first.'); end
 
 %Check column data format. Must have following lines:
 format{1} = '# Column 1-3: phi1, PHI, phi2 (orientation of point in radians)';
