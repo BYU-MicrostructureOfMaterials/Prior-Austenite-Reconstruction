@@ -1,4 +1,4 @@
-function [BW,IDs] = poly_select_IPF_data(I, reconstructor, type)
+function [BW,IDs] = poly_select_IPF_data(I, reconstructor, type, show)
 
 switch type
     case 'PA'
@@ -31,13 +31,15 @@ while pickAnother
     [x,y,button] = ginput(1);
     
     if isempty(button) || ~ismember(button,[1 2 3])
-        imshow(image);
+        if(show == true || nargin == 3)
+            imshow(image);
+        end
         pickAnother = false;
     else
         xset = [xset; x];
         yset = [yset; y];
         
-        plot(xset,yset,'k','LineWidth',1);
+        plot(xset,yset,'w','LineWidth',1);
     end
     
 end

@@ -70,7 +70,7 @@ classdef SelectedData < handle
        
        IDs = point_select_IPF_data(I,reconstructor, type);
        
-       [BW,IDs] = poly_select_IPF_data(I, reconstructor, type)
+       [BW,IDs] = poly_select_IPF_data(I, reconstructor, type, show)
        
    end
     
