@@ -143,6 +143,8 @@ function GrainFile2Browse_Callback(hObject, eventdata, handles)
 % hObject    handle to GrainFile2Browse (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+% % [name,path] = uigetfile({'*.txt','Grain File Type II'},'Select Grain File Type II');
 [name,path] = uigetfile({'*.txt','Grain File Type II'},'Select Grain File Type II',handles.folder);
 handles.folder = path;
 handles.GF2_Path = fullfile(path,name);
@@ -162,6 +164,7 @@ if exist(handles.GF1_Path,'file')
         scandata = Scandata(handles.GF1_Path,handles.GF2_Path);
         grainmap = Grainmap(scandata);
         Reconstruction(grainmap);
+        HandReconstruction(grainmap);
     else
         w = warndlg('Grain File Type II doesn''t exist');
         uiwait(w,5)
