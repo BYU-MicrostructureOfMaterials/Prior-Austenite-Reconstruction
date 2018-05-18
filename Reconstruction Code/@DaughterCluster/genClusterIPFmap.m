@@ -24,7 +24,9 @@ function genClusterIPFmap(obj, IDmat, type, filledtype,fignum)
     end
 
     obj.clusterIPFmap = IPFmap(IDmat,Omap);
+    if(nargin == 5)
     figure(fignum);
     imshow(obj.clusterIPFmap.IPFimage);
+    end
 
 end
